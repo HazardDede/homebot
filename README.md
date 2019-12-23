@@ -4,12 +4,14 @@
 
 > The smart bot to the rescue to automate tedious tasks around your home
 
-## Installation
+## Getting started
 
 ```bash
-pipenv install
+poetry install --dev
+export PYTHONPATH=`pwd`
+python homebot run <config>
 ```
 
 ## Configuring
 
-
+TBD
