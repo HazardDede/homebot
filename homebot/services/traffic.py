@@ -1,5 +1,5 @@
 """Traffic related services."""
-
+import asyncio
 from datetime import datetime, timedelta
 from typing import Iterable, Any, Dict, cast, List
 
@@ -14,8 +14,9 @@ class DeutscheBahn(TrafficService):
     destination."""
 
     @classmethod
-    def _mk_info(cls, payload: Dict[str, Any], origin: str,
-                 destination: str) -> TrafficInfo:
+    async def _mk_info(
+            cls, payload: Dict[str, Any], origin: str, destination: str
+    ) -> TrafficInfo:
         return TrafficInfo(
             origin=origin,
             destination=destination,
@@ -30,12 +31,9 @@ class DeutscheBahn(TrafficService):
             delay_arrival=int(payload.get('delay', {}).get('delay_arrival', 0))
         )
 
-    def pull(self, origin: str, destination: str, only_direct: bool = False,
-             offset: int = 0) -> Iterable[TrafficInfo]:
-        origin = str(origin)
-        destination = str(destination)
-        only_direct = bool(only_direct)
-
+    def _connections(
+            self, origin: str, destination: str, offset: int, only_direct: bool
+    ) -> Iterable[Dict[str, Any]]:
         api = Schiene()
         connections = api.connections(
             origin,
@@ -43,8 +41,23 @@ class DeutscheBahn(TrafficService):
             only_direct=only_direct,
             dt=(datetime.now() + timedelta(minutes=offset))
         )
+        return cast(Iterable[Dict[str, Any]], connections)
+
+    async def pull(
+            self, origin: str, destination: str, only_direct: bool = False,
+            offset: int = 0
+    ) -> Iterable[TrafficInfo]:
+        origin = str(origin)
+        destination = str(destination)
+        only_direct = bool(only_direct)
+
+        loop = asyncio.get_event_loop()
+        connections = await loop.run_in_executor(
+            None, self._connections,
+            origin, destination, offset, only_direct
+        )
 
         return [
-            self._mk_info(conn, origin, destination)
+            await self._mk_info(conn, origin, destination)
             for conn in connections
         ]

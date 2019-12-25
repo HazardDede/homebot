@@ -23,7 +23,7 @@ class Processor:
             raise ValueError(f"Argument 'command' ('{self._command}') is not a valid command.")
         self._command = re.escape(self._command)
 
-    def help(self) -> HelpEntry:
+    async def help(self) -> HelpEntry:
         """Return the help entry for this processor."""
         return HelpEntry(
             command=str(self._command),
@@ -31,11 +31,11 @@ class Processor:
             description=""
         )
 
-    def can_process(self, message: Message) -> bool:
+    async def can_process(self, message: Message) -> bool:
         """Checks if the processor can process the given message."""
         raise NotImplementedError()
 
-    def __call__(self, message: Message) -> Any:
+    async def __call__(self, message: Message) -> Any:
         """Process the given message."""
         raise NotImplementedError()
 
@@ -52,19 +52,19 @@ class RegexProcessor(Processor):
             re.IGNORECASE
         )
 
-    def _try_match(self, message: Message) -> Optional[Match[str]]:
+    async def _try_match(self, message: Message) -> Optional[Match[str]]:
         return self._regex.match(message.text)
 
-    def can_process(self, message: Message) -> bool:
-        return self._try_match(message) is not None
+    async def can_process(self, message: Message) -> bool:
+        return await self._try_match(message) is not None
 
-    def __call__(self, message: Message) -> Any:
-        match = self._try_match(message)
+    async def __call__(self, message: Message) -> Any:
+        match = await self._try_match(message)
         if not match:
             return None
-        return self._matched(message, match)
+        return await self._matched(message, match)
 
-    def _matched(self, message: Message, match: Match[str]) -> Any:
+    async def _matched(self, message: Message, match: Match[str]) -> Any:
         """Processes the matched message. The regex match will be passed as well."""
         raise NotImplementedError()
 
@@ -75,23 +75,23 @@ class Help(RegexProcessor):
 
     DEFAULT_COMMAND = 'help'
 
-    def help(self) -> HelpEntry:
-        res = super().help()
+    async def help(self) -> HelpEntry:
+        res = await super().help()
         res.description = "Shows this help page."
         return res
 
-    def _collect(self) -> Iterable[HelpEntry]:
+    async def _collect(self) -> Iterable[HelpEntry]:
         """Collects all the help entries of all message processors for the current
         orchestra."""
         # pylint: disable=protected-access
         if not self.orchestrator or not self.orchestrator.flows:
-            return [self.help()]
+            return [await self.help()]
 
-        return [handler.processor.help() for handler in self.orchestrator.flows]
+        return [await handler.processor.help() for handler in self.orchestrator.flows]
         # pylint: enable=protected-access
 
-    def _matched(self, message: Message, match: Match[str]) -> Any:
-        return self._collect()
+    async def _matched(self, message: Message, match: Match[str]) -> Any:
+        return await self._collect()
 
 
 class Version(RegexProcessor):
@@ -99,17 +99,17 @@ class Version(RegexProcessor):
 
     DEFAULT_COMMAND = 'version'
 
-    def help(self) -> HelpEntry:
-        res = super().help()
+    async def help(self) -> HelpEntry:
+        res = await super().help()
         res.description = "Shows the version of homebot."
         return res
 
-    def _version(self) -> str:
+    async def _version(self) -> str:
         """Collects all the help entries of all message processors for the current
         orchestra."""
         _ = self
         from homebot.config import __VERSION__
         return __VERSION__
 
-    def _matched(self, message: Message, match: Match[str]) -> Any:
-        return self._version()
+    async def _matched(self, message: Message, match: Match[str]) -> Any:
+        return await self._version()

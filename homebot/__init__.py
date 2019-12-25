@@ -1,5 +1,5 @@
 """Contains base code for flow items and the orcestrator itself."""
-
+import asyncio
 from typing import Iterable, cast, Any
 
 import attr
@@ -73,27 +73,36 @@ class Orchestrator:
         for flw in self.flows:
             flw.processor.orchestrator = self
 
-    def _handle(self, message: Message) -> None:
+    async def _call_formatters(
+            self, formatters: Iterable[Formatter], payload: Any
+    ) -> Any:
+        for formatter in formatters:
+            payload = await formatter(payload)
+        return payload
+
+    async def _call_actions(
+            self, actions: Iterable[act.Action], message: Message, payload: Any
+    ) -> None:
+        coros = [action(message.clone(), payload) for action in actions]
+        await asyncio.gather(*coros)
+
+    async def _handle(self, message: Message) -> None:
         """Kicks of the flow for one message. This is the callback for the listener."""
         handled = False
         for flow in self.flows:
-            if flow.processor.can_process(message.clone()):
+            if await flow.processor.can_process(message.clone()):
                 handled = True
-                payload = flow.processor(message.clone())
-                for formatter in flow.formatters:
-                    payload = formatter(payload)
-                for action in flow.actions:
-                    action(message.clone(), payload)
+                payload = await flow.processor(message.clone())
+                payload = await self._call_formatters(flow.formatters, payload)
+                await self._call_actions(flow.actions, message, payload)
 
         if not handled:
             err_msg = cast(str, eval(f'f{self.error_flow.unknown_command_message!r}'))  # pylint: disable=eval-used
-            for formatter in self.error_flow.formatters:
-                err_msg = formatter(err_msg)
-            for action in self.error_flow.actions:
-                action(message.clone(), err_msg)
+            err_msg = await self._call_formatters(self.error_flow.formatters, err_msg)
+            await self._call_actions(self.error_flow.actions, message, err_msg)
 
-    def run(self) -> None:
+    async def run(self) -> None:
         """Run the application. Will start the listener and kick of the flow on incoming
         messages."""
         self.listener.callback = self._handle
-        self.listener.start()
+        await self.listener.start()

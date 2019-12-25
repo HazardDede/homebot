@@ -1,5 +1,5 @@
 """Slack related listener."""
-
+import asyncio
 import re
 from typing import Dict, Any
 
@@ -19,13 +19,15 @@ class DirectMention(Listener):
         self._token = token
         self._bot_id = bot_id
         self._client = slack.RTMClient(
-            token=self._token
+            token=self._token,
+            run_async=True,
+            loop=asyncio.get_event_loop()
         )
         self._direct_mention_regex = re.compile(
             self.DIRECT_MENTION_REGEX.format(id=self._bot_id))
         # self._mention_regex = re.compile(self.MENTION_REGEX.format(id=self._bot_id))
 
-    def _on_message(self, data: Dict[str, Any], **unused: Any) -> None:  # pylint: disable=unused-argument
+    async def _on_message(self, data: Dict[str, Any], **unused: Any) -> None:  # pylint: disable=unused-argument
         """Callback that is called on every message. The message text will be parsed
         for a direct mention of the bot and only those with direct mentions will be
         delegated to the processing flow."""
@@ -45,11 +47,11 @@ class DirectMention(Listener):
             )
 
         if message:
-            self._fire_callback(message)
+            await self._fire_callback(message)
 
-    def start(self) -> None:
+    async def start(self) -> None:
         self._client.on(
             event='message',
             callback=self._on_message
         )
-        self._client.start()
+        await self._client.start()

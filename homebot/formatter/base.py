@@ -13,7 +13,7 @@ class Formatter:
             # TODO: Logging
             print(f"Argument '{key}' is unused")
 
-    def __call__(self, payload: Any) -> Any:
+    async def __call__(self, payload: Any) -> Any:
         """Performs the formatting."""
         return payload
 
@@ -24,8 +24,8 @@ class StringFormat(Formatter):
         super().__init__(**kwargs)
         self._format = str(formatting)
 
-    def _process(self, payload: Any) -> str:  # pylint: disable=unused-argument
+    async def _process(self, payload: Any) -> str:  # pylint: disable=unused-argument
         return cast(str, eval(f'f{self._format!r}'))  # pylint: disable=eval-used
 
-    def __call__(self, payload: Any) -> Any:
-        return super().__call__(self._process(payload))
+    async def __call__(self, payload: Any) -> Any:
+        return await super().__call__(await self._process(payload))

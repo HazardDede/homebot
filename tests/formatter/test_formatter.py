@@ -1,10 +1,13 @@
+import pytest
+
 from homebot import Formatter
 
 
-def test_formatter_coworking():
+@pytest.mark.asyncio
+async def test_formatter_coworking():
     dut = Formatter(any='kw', args='allowed')
     payload = dict(will='be', returned='as is')
-    assert dut(payload) is payload
+    assert await dut(payload) is payload
 
 
 def test_formatter_import():

@@ -16,7 +16,7 @@ class Traffic(RegexProcessor):
         super().__init__(**kwargs)
         self._service = service
 
-    def help(self) -> HelpEntry:
+    async def help(self) -> HelpEntry:
         return HelpEntry(
             command=str(self._command),
             usage="{} <origin> to <destination> [+offset]".format(self._command),
@@ -26,13 +26,13 @@ class Traffic(RegexProcessor):
                         "it will be set to 0 minutes (which means now)."
         )
 
-    def _call_service(self, match: Match[str]) -> Iterable[TrafficInfo]:
+    async def _call_service(self, match: Match[str]) -> Iterable[TrafficInfo]:
         """Calls the traffic service to retrieve the traffic infos."""
         source = match.group('source').strip()
         target = match.group('target').strip()
         offset = int(match.group('offset') or 0)
 
-        return self._service.pull(source, target, offset=offset)
+        return await self._service.pull(source, target, offset=offset)
 
-    def _matched(self, message: Message, match: Match[str]) -> Any:
-        return self._call_service(match)
+    async def _matched(self, message: Message, match: Match[str]) -> Any:
+        return await self._call_service(match)

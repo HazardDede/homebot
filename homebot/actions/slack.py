@@ -10,10 +10,13 @@ from homebot.models import HelpEntry, Message
 class SendMessage(Action):
     """Posts the payload to slack."""
     def __init__(self, token: str):
-        self._client = slack.WebClient(token=token)
+        self._client = slack.WebClient(
+            token=token,
+            run_async=True
+        )
 
     @staticmethod
-    def _create_help(messages: Iterable[HelpEntry]) -> str:
+    async def _create_help(messages: Iterable[HelpEntry]) -> str:
         """Helper to send help messages to slack"""
         from terminaltables import AsciiTable  # type: ignore
         from textwrap import wrap
@@ -34,18 +37,18 @@ class SendMessage(Action):
 
         return f"```{table.table}```"
 
-    def __call__(self, message: Message, payload: Any) -> None:
+    async def __call__(self, message: Message, payload: Any) -> None:
         """Performs the action. Sends the payload to a slack channel."""
         # TODO: Put this into utils
         if isinstance(payload, HelpEntry):
-            payload = self._create_help([payload])
+            payload = await self._create_help([payload])
         if isinstance(payload, list) and payload and isinstance(payload[0], HelpEntry):
-            payload = self._create_help(payload)
+            payload = await self._create_help(payload)
 
         if not isinstance(payload, str):
             payload = str(payload)
 
-        self._client.chat_postMessage(
+        await self._client.chat_postMessage(
             text=payload,
             channel=message.origin
         )

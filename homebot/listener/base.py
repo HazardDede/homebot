@@ -22,15 +22,15 @@ class Listener:
         messages."""
         self._callback = value
 
-    def _fire_callback(self, message: Message) -> None:
+    async def _fire_callback(self, message: Message) -> None:
         """Helper method to trigger the callback with the given message."""
         if not self._callback:
             return
         try:
-            self._callback(message)
+            await self._callback(message)
         except Exception:  # pylint: disable=broad-except
             print(traceback.format_exc())
 
-    def start(self) -> None:
+    async def start(self) -> None:
         """Run the listener."""
         raise NotImplementedError()

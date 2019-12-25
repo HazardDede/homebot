@@ -1,7 +1,7 @@
 """Application models (beans, containers, whatever you may call it)."""
 
 import copy
-from typing import Callable, List
+from typing import List, Callable, Awaitable
 
 import attr
 
@@ -45,4 +45,4 @@ class TrafficInfo:
     delay_arrival: int = attr.ib()
 
 
-ListenerCallback = Callable[[Message], None]
+ListenerCallback = Callable[[Message], Awaitable[None]]

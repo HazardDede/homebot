@@ -1,4 +1,5 @@
 """Main application entrypoint."""
+import asyncio
 import importlib
 import os
 import pathlib
@@ -43,7 +44,8 @@ class Runner:
             raise RuntimeError(f"Configuration '{str(config)}' does not include a "
                                f"Orchestrator.")
 
-        orchestra.run()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(orchestra.run())
 
     @staticmethod
     def validate(config: str) -> None:
