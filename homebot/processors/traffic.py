@@ -9,7 +9,7 @@ from homebot.services import TrafficService
 class Traffic(RegexProcessor):
     """Processes a !traffic command and delegates the work to a traffic service."""
     DEFAULT_COMMAND = 'traffic'
-    MESSAGE_REGEX = r'^\s*\{command}\s+(?P<source>[\w\d ]+)\s+to\s+' \
+    MESSAGE_REGEX = r'^\s*{command}\s+(?P<source>[\w\d ]+)\s+to\s+' \
                     r'(?P<target>[\w\d ]+)\s*(\+(?P<offset>\d+))?\w*$'
 
     def __init__(self, service: TrafficService, **kwargs: Any):

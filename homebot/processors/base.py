@@ -84,10 +84,10 @@ class Help(RegexProcessor):
         """Collects all the help entries of all message processors for the current
         orchestra."""
         # pylint: disable=protected-access
-        if not self.orchestrator or not self.orchestrator._flows:
+        if not self.orchestrator or not self.orchestrator.flows:
             return [self.help()]
 
-        return [handler.processor.help() for handler in self.orchestrator._flows]
+        return [handler.processor.help() for handler in self.orchestrator.flows]
         # pylint: enable=protected-access
 
     def _matched(self, message: Message, match: Match[str]) -> Any:
