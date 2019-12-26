@@ -1,5 +1,5 @@
 """Contains base classes for formatting payloads."""
-from typing import Any, List
+from typing import Any, Iterable
 
 from typeguard import typechecked
 
@@ -11,10 +11,10 @@ class _TrafficFormatter(Formatter):
     """Base class for all traffic formatters."""
 
     @typechecked(always=True)
-    async def __call__(self, payload: Any) -> Any:
+    async def __call__(self, payload: Iterable[TrafficInfo]) -> Any:
         return await super().__call__(await self._format(payload))
 
-    async def _format(self, info: List[TrafficInfo]) -> str:
+    async def _format(self, info: Iterable[TrafficInfo]) -> str:
         """Implement in derived classes to format a list of `TrafficInfo`."""
         raise NotImplementedError()
 
@@ -44,8 +44,8 @@ class PlainText(_TrafficFormatter):
 
         raise NotImplementedError(f"Layout '{self._layout}' is not supported.")
 
-    @typechecked(always=True)
-    async def _format(self, info: List[TrafficInfo]) -> str:
+    async def _format(self, info: Iterable[TrafficInfo]) -> str:
+        info = list(info)
         if not info:
             return ""
         first = info[0]

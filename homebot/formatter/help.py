@@ -1,12 +1,13 @@
 """HelpEntry related formatters."""
 
 from textwrap import wrap
-from typing import Any
+from typing import Any, Iterable
 
 from terminaltables import AsciiTable  # type: ignore
 from typeguard import typechecked
 
 from homebot.formatter.base import Formatter
+from homebot.models import HelpEntry
 
 
 class TextTable(Formatter):
@@ -20,7 +21,7 @@ class TextTable(Formatter):
         self.description_width = description_width
 
     @typechecked(always=True)
-    async def __call__(self, payload: Any) -> Any:
+    async def __call__(self, payload: Iterable[HelpEntry]) -> Any:
         # TODO: Check payload for iterable of HelpEntry
         rows = [
             [
