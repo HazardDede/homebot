@@ -23,7 +23,15 @@ class Formatter(AutoStrMixin, LogMixin):
 
 
 class StringFormat(Formatter):
-    """Formats the payload by using the passed format."""
+    """Formats the payload by using the passed format.
+
+    Example:
+
+        >>> import asyncio
+        >>> dut = StringFormat("This is the number: {payload}")
+        >>> asyncio.run(dut(42))
+        'This is the number: 42'
+    """
 
     @typechecked(always=True)
     def __init__(self, formatting: str, **kwargs: Any):
