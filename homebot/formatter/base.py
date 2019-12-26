@@ -2,6 +2,8 @@
 message processors."""
 from typing import Any, cast
 
+from typeguard import typechecked
+
 from homebot.utils import AutoStrMixin, LogMixin
 
 
@@ -22,6 +24,8 @@ class Formatter(AutoStrMixin, LogMixin):
 
 class StringFormat(Formatter):
     """Formats the payload by using the passed format."""
+
+    @typechecked(always=True)
     def __init__(self, formatting: str, **kwargs: Any):
         super().__init__(**kwargs)
         self._format = str(formatting)
@@ -29,5 +33,6 @@ class StringFormat(Formatter):
     async def _process(self, payload: Any) -> str:  # pylint: disable=unused-argument
         return cast(str, eval(f'f{self._format!r}'))  # pylint: disable=eval-used
 
+    @typechecked(always=True)
     async def __call__(self, payload: Any) -> Any:
         return await super().__call__(await self._process(payload))

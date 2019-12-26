@@ -464,6 +464,18 @@ python-versions = "*"
 version = "1.4.0"
 
 [[package]]
+category = "main"
+description = "Run-time type checker for Python"
+name = "typeguard"
+optional = false
+python-versions = ">=3.5.2"
+version = "2.7.0"
+
+[package.extras]
+doc = ["sphinx-rtd-theme", "sphinx-autodoc-typehints (>=1.2.0)"]
+test = ["pytest", "pytest-cov", "typing-extensions"]
+
+[[package]]
 category = "dev"
 description = "Backported and Experimental Type Hints for Python 3.5+"
 name = "typing-extensions"
@@ -529,7 +541,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "6509bbf1ddcc4168dba1d3479452013f69beed3396b023007eb3f87bc0754836"
+content-hash = "c603e2c337388eb0b056e16f662f5fae8a26ba445ed6b2f50e8b488cc8683372"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -798,6 +810,10 @@ typed-ast = [
     {file = "typed_ast-1.4.0-cp38-cp38-win32.whl", hash = "sha256:1170afa46a3799e18b4c977777ce137bb53c7485379d9706af8a59f2ea1aa161"},
     {file = "typed_ast-1.4.0-cp38-cp38-win_amd64.whl", hash = "sha256:838997f4310012cf2e1ad3803bce2f3402e9ffb71ded61b5ee22617b3a7f6b6e"},
     {file = "typed_ast-1.4.0.tar.gz", hash = "sha256:66480f95b8167c9c5c5c87f32cf437d585937970f3fc24386f313a4c97b44e34"},
+]
+typeguard = [
+    {file = "typeguard-2.7.0-py3-none-any.whl", hash = "sha256:a7a2461337b38a157ea7e072566badd8af03c36c46250d87911d90e1a5c2aadf"},
+    {file = "typeguard-2.7.0.tar.gz", hash = "sha256:84f7f28bdf43efcf969e79ca2f8008fc176b0997137fc27f3625f103449cd25b"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.7.4.1-py2-none-any.whl", hash = "sha256:910f4656f54de5993ad9304959ce9bb903f90aadc7c67a0bef07e678014e892d"},

@@ -1,8 +1,7 @@
 """Formatter package."""
 
 from homebot.formatter.base import Formatter, StringFormat
-from homebot.formatter import traffic
-from homebot.formatter import slack
+from homebot.formatter import help, slack, traffic  # pylint: disable=redefined-builtin
 
 
-__all__ = ['slack', 'traffic', 'Formatter', 'StringFormat']
+__all__ = ['help', 'slack', 'traffic', 'Formatter', 'StringFormat']

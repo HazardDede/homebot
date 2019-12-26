@@ -1,5 +1,4 @@
 """Contains listener base classes. Listeners do produce messages to process."""
-import traceback
 from typing import Optional
 
 from homebot.models import ListenerCallback, Message
@@ -30,7 +29,7 @@ class Listener(AutoStrMixin, LogMixin):
         try:
             await self._callback(message)
         except Exception:  # pylint: disable=broad-except
-            print(traceback.format_exc())
+            self.logger.exception("Error caught during execution of callback")
 
     async def start(self) -> None:
         """Run the listener."""

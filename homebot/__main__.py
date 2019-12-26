@@ -1,6 +1,7 @@
 """Main application entrypoint."""
 import asyncio
 import importlib
+import logging
 import os
 import pathlib
 import py_compile
@@ -9,6 +10,10 @@ import sys
 import fire  # type: ignore
 
 from homebot import Orchestrator
+
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
 
 def _assert_config_file(config: str) -> None:

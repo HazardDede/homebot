@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Iterable, Any, Dict, cast, List
 
 from schiene import Schiene  # type: ignore
+from typeguard import typechecked
 
 from homebot.models import TrafficInfo
 from homebot.services.base import TrafficService
@@ -43,6 +44,7 @@ class DeutscheBahn(TrafficService):
         )
         return cast(Iterable[Dict[str, Any]], connections)
 
+    @typechecked(always=True)
     async def pull(
             self, origin: str, destination: str, only_direct: bool = False,
             offset: int = 0

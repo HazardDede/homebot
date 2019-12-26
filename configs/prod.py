@@ -31,7 +31,7 @@ flows = [
     ),
     Flow(
         processor=help_processor,
-        formatters=[],
+        formatters=[fmt.help.TextTable(), fmt.slack.Codify()],
         actions=slack_action
     ),
     Flow(
@@ -41,7 +41,7 @@ flows = [
     )
 ]
 error_flow = ErrorFlow(
-    unknown_command_message="Command is invalid: `{}`. Try `{}` for help".format(
+    unknown_command_message="Command is invalid: `{}`. Try `{}` for help page.".format(
         "{message.text}", help_processor._command
     ),
     formatters=[],

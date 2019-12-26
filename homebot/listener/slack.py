@@ -4,6 +4,7 @@ import re
 from typing import Dict, Any
 
 import slack  # type: ignore
+from typeguard import typechecked
 
 from homebot.listener.base import Listener
 from homebot.models import Message
@@ -14,6 +15,7 @@ class DirectMention(Listener):
     # MENTION_REGEX = r'\<\@{id}\>'
     DIRECT_MENTION_REGEX = r'^\<\@{id}\>'
 
+    @typechecked(always=True)
     def __init__(self, token: str, bot_id: str):
         super().__init__()
         self._token = token

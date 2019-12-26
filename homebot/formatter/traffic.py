@@ -1,12 +1,16 @@
 """Contains base classes for formatting payloads."""
 from typing import Any, List
 
+from typeguard import typechecked
+
 from homebot.formatter.base import Formatter
 from homebot.models import TrafficInfo
 
 
 class _TrafficFormatter(Formatter):
     """Base class for all traffic formatters."""
+
+    @typechecked(always=True)
     async def __call__(self, payload: Any) -> Any:
         return await super().__call__(await self._format(payload))
 
@@ -26,6 +30,7 @@ class PlainText(_TrafficFormatter):
     <products>: <departure> - <arrival> (+<delay>)
     """
 
+    @typechecked(always=True)
     def __init__(self, layout: str = 'simple', **kwargs: Any):
         super().__init__(**kwargs)
         self._layout = layout
@@ -39,6 +44,7 @@ class PlainText(_TrafficFormatter):
 
         raise NotImplementedError(f"Layout '{self._layout}' is not supported.")
 
+    @typechecked(always=True)
     async def _format(self, info: List[TrafficInfo]) -> str:
         if not info:
             return ""

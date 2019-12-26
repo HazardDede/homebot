@@ -9,11 +9,9 @@ from homebot.formatter import Formatter
 from homebot.listener import Listener
 from homebot.models import Message
 from homebot.processors import Processor
-from homebot.utils import (
-    is_iterable_but_no_str,
-    attrs_assert_iterable,
-    make_list,
-    attrs_assert_type
+from homebot.utils import make_list
+from homebot.validator import (
+    attrs_assert_type, attrs_assert_iterable, is_iterable_but_no_str
 )
 
 

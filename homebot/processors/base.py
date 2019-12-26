@@ -3,6 +3,8 @@ listeners."""
 import re
 from typing import Any, Optional, Iterable, Match
 
+from typeguard import typechecked
+
 from homebot.models import HelpEntry, Message
 from homebot.utils import AutoStrMixin, LogMixin
 
@@ -13,6 +15,7 @@ class Processor(AutoStrMixin, LogMixin):
     DEFAULT_COMMAND: Optional[str] = None  # Default command when not passed via initializer
     VALID_COMMAND_PATTERN = r'^[!a-z]\w+$'
 
+    @typechecked(always=True)
     def __init__(self, command: Optional[str] = None):
         self.orchestrator: Optional['Orchestrator'] = None  # type: ignore
         self._command = command or self.DEFAULT_COMMAND
@@ -32,6 +35,7 @@ class Processor(AutoStrMixin, LogMixin):
             description=""
         )
 
+    @typechecked(always=True)
     async def can_process(self, message: Message) -> bool:
         """Checks if the processor can process the given message."""
         raise NotImplementedError()
@@ -46,6 +50,7 @@ class RegexProcessor(Processor):
     You have to implement the `MESSAGE_REGEX` and the method `_matched` in subclasses."""
     MESSAGE_REGEX = r'^\s*{command}\s*$'
 
+    @typechecked(always=True)
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self._regex = re.compile(
@@ -56,9 +61,11 @@ class RegexProcessor(Processor):
     async def _try_match(self, message: Message) -> Optional[Match[str]]:
         return self._regex.match(message.text)
 
+    @typechecked(always=True)
     async def can_process(self, message: Message) -> bool:
         return await self._try_match(message) is not None
 
+    @typechecked(always=True)
     async def __call__(self, message: Message) -> Any:
         match = await self._try_match(message)
         if not match:

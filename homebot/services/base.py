@@ -7,6 +7,7 @@ from homebot.utils import AutoStrMixin
 
 class TrafficService(AutoStrMixin):
     """Base traffic service. Defines the interface to respect."""
+
     async def pull(
             self, origin: str, destination: str, only_direct: bool = False,
             offset: int = 0
