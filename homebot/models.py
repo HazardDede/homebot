@@ -9,9 +9,9 @@ import attr
 @attr.s
 class Message:
     """A message returned from a listener."""
-    text: str = attr.ib()
-    origin: str = attr.ib()
-    direct_mention: bool = attr.ib(default=False)
+    text: str = attr.ib(converter=str)
+    origin: str = attr.ib(converter=str)
+    direct_mention: bool = attr.ib(converter=bool, default=False)
 
     def clone(self) -> 'Message':
         """Clones this instance."""
@@ -21,9 +21,9 @@ class Message:
 @attr.s
 class HelpEntry:
     """A help entry from a message processor."""
-    command: str = attr.ib()
-    usage: str = attr.ib()
-    description: str = attr.ib()
+    command: str = attr.ib(converter=str)
+    usage: str = attr.ib(converter=str)
+    description: str = attr.ib(converter=str)
 
 
 @attr.s

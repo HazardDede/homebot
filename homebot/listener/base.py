@@ -3,9 +3,10 @@ import traceback
 from typing import Optional
 
 from homebot.models import ListenerCallback, Message
+from homebot.utils import AutoStrMixin, LogMixin
 
 
-class Listener:
+class Listener(AutoStrMixin, LogMixin):
     """Base class for listeners. Defines the interface to respect."""
 
     def __init__(self) -> None:

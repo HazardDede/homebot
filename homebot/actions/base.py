@@ -3,9 +3,10 @@ message processors or formatters."""
 from typing import Any
 
 from homebot.models import Message
+from homebot.utils import AutoStrMixin, LogMixin
 
 
-class Action:
+class Action(AutoStrMixin, LogMixin):
     """Action base class. Provides the interface to respect."""
     async def __call__(self, message: Message, payload: Any) -> None:
         """Performs the action."""

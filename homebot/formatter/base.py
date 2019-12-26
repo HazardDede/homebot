@@ -2,8 +2,10 @@
 message processors."""
 from typing import Any, cast
 
+from homebot.utils import AutoStrMixin, LogMixin
 
-class Formatter:
+
+class Formatter(AutoStrMixin, LogMixin):
     """Base class for all formatters. Introduces the interface to respect."""
 
     def __init__(self, **kwargs: Any):

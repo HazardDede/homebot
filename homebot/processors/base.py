@@ -4,9 +4,10 @@ import re
 from typing import Any, Optional, Iterable, Match
 
 from homebot.models import HelpEntry, Message
+from homebot.utils import AutoStrMixin, LogMixin
 
 
-class Processor:
+class Processor(AutoStrMixin, LogMixin):
     """Base class for message processors."""
 
     DEFAULT_COMMAND: Optional[str] = None  # Default command when not passed via initializer

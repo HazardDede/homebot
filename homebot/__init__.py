@@ -1,4 +1,4 @@
-"""Contains base code for flow items and the orcestrator itself."""
+"""Contains base code for flow items and the orchestrator itself."""
 import asyncio
 from typing import Iterable, cast, Any
 
@@ -9,8 +9,12 @@ from homebot.formatter import Formatter
 from homebot.listener import Listener
 from homebot.models import Message
 from homebot.processors import Processor
-from homebot.utils import is_iterable_but_no_str, attrs_assert_iterable, make_list, \
+from homebot.utils import (
+    is_iterable_but_no_str,
+    attrs_assert_iterable,
+    make_list,
     attrs_assert_type
+)
 
 
 @attr.s
