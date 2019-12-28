@@ -4,9 +4,10 @@ from typing import Any
 
 from homebot.models import Message
 from homebot.utils import AutoStrMixin, LogMixin
+from homebot.validator import TypeGuardMeta
 
 
-class Action(AutoStrMixin, LogMixin):
+class Action(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
     """Action base class. Provides the interface to respect."""
     async def __call__(self, message: Message, payload: Any) -> None:
         """Performs the action."""

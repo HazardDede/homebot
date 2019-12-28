@@ -4,7 +4,6 @@ import re
 from typing import Dict, Any
 
 import slack  # type: ignore
-from typeguard import typechecked
 
 from homebot.listener.base import Listener
 from homebot.models import Message
@@ -15,7 +14,6 @@ class DirectMention(Listener):
     # MENTION_REGEX = r'\<\@{id}\>'
     DIRECT_MENTION_REGEX = r'^\<\@{id}\>'
 
-    @typechecked(always=True)
     def __init__(self, token: str, bot_id: str):
         super().__init__()
         self._token = token
@@ -29,13 +27,16 @@ class DirectMention(Listener):
             self.DIRECT_MENTION_REGEX.format(id=self._bot_id))
         # self._mention_regex = re.compile(self.MENTION_REGEX.format(id=self._bot_id))
 
-    async def _on_message(self, data: Dict[str, Any], **unused: Any) -> None:  # pylint: disable=unused-argument
+    async def _on_message(self, data: Dict[str, Any], **unused: Any) -> None:
         """Callback that is called on every message. The message text will be parsed
         for a direct mention of the bot and only those with direct mentions will be
         delegated to the processing flow."""
+        _ = unused  # Fake usage
+
         message = None
         message_text = data.get('text')
         channel = data.get('channel')
+        user_id = data.get('user')
         if not message_text:
             return
 
@@ -45,6 +46,7 @@ class DirectMention(Listener):
             message = Message(
                 text=message_text[last:].strip(),
                 origin=str(channel),
+                origin_user=str(user_id),
                 direct_mention=True
             )
 

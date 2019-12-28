@@ -1,11 +1,15 @@
 """Contains listener base classes. Listeners do produce messages to process."""
+import asyncio
 from typing import Optional
+
+from typeguard import check_type
 
 from homebot.models import ListenerCallback, Message
 from homebot.utils import AutoStrMixin, LogMixin
+from homebot.validator import TypeGuardMeta
 
 
-class Listener(AutoStrMixin, LogMixin):
+class Listener(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
     """Base class for listeners. Defines the interface to respect."""
 
     def __init__(self) -> None:
@@ -20,6 +24,7 @@ class Listener(AutoStrMixin, LogMixin):
     def callback(self, value: ListenerCallback) -> None:
         """Set the callback function. This is where the listener will send incoming
         messages."""
+        check_type('value', value, ListenerCallback)  # type: ignore
         self._callback = value
 
     async def _fire_callback(self, message: Message) -> None:
@@ -27,7 +32,7 @@ class Listener(AutoStrMixin, LogMixin):
         if not self._callback:
             return
         try:
-            await self._callback(message)
+            asyncio.create_task(self._callback(message))
         except Exception:  # pylint: disable=broad-except
             self.logger.exception("Error caught during execution of callback")
 

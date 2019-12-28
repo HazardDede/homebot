@@ -1,25 +1,18 @@
 """Contains base classes for Formatters. Formatters do format payloads produced by
 message processors."""
-from typing import Any, cast
+from typing import Any
 
-from typeguard import typechecked
+from homebot.models import Message
+from homebot.utils import AutoStrMixin, LogMixin, interpolate
+from homebot.validator import TypeGuardMeta
 
-from homebot.utils import AutoStrMixin, LogMixin
 
-
-class Formatter(AutoStrMixin, LogMixin):
+class Formatter(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
     """Base class for all formatters. Introduces the interface to respect."""
 
-    def __init__(self, **kwargs: Any):
-        super().__init__()
-
-        for key, _ in kwargs.items():
-            # TODO: Logging
-            print(f"Argument '{key}' is unused")
-
-    async def __call__(self, payload: Any) -> Any:
+    async def __call__(self, message: Message, payload: Any) -> Any:
         """Performs the formatting."""
-        return payload
+        raise NotImplementedError()
 
 
 class StringFormat(Formatter):
@@ -29,18 +22,13 @@ class StringFormat(Formatter):
 
         >>> import asyncio
         >>> dut = StringFormat("This is the number: {payload}")
-        >>> asyncio.run(dut(42))
+        >>> msg = Message(text="", origin="", origin_user="", direct_mention=True)
+        >>> asyncio.run(dut(msg, 42))
         'This is the number: 42'
     """
 
-    @typechecked(always=True)
-    def __init__(self, formatting: str, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(self, formatting: str):
         self._format = str(formatting)
 
-    async def _process(self, payload: Any) -> str:  # pylint: disable=unused-argument
-        return cast(str, eval(f'f{self._format!r}'))  # pylint: disable=eval-used
-
-    @typechecked(always=True)
-    async def __call__(self, payload: Any) -> Any:
-        return await super().__call__(await self._process(payload))
+    async def __call__(self, message: Message, payload: Any) -> str:
+        return interpolate(self._format, message=message, payload=payload)

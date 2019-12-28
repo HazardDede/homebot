@@ -1,0 +1,32 @@
+{
+    "blocks": [{
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "*{payload.set_name} ({payload.set_id})*"
+        },
+        "fields": [
+            {
+                "type": "mrkdwn",
+                "text": "*Current*\n{payload.current:.2f} € ({((payload.recommended - payload.current) * -1):.2f} €)"
+            },
+            {
+                "type": "mrkdwn",
+                "text": "*RRP*\n{payload.recommended:.2f} €"
+            },
+            {
+                "type": "mrkdwn",
+                "text": "*Lowest*\n{payload.lowest:.2f} €"
+            },
+            {
+                "type": "mrkdwn",
+                "text": "*Highest*\n{payload.highest:.2f} €"
+            }
+        ]
+    },
+    {
+        "type": "image",
+        "image_url": "{payload.set_image_url}",
+        "alt_text": "LEGO Set image"
+    }]
+}

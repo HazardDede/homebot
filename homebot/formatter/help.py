@@ -1,28 +1,22 @@
 """HelpEntry related formatters."""
 
 from textwrap import wrap
-from typing import Any, Iterable
+from typing import Iterable
 
 from terminaltables import AsciiTable  # type: ignore
-from typeguard import typechecked
 
 from homebot.formatter.base import Formatter
-from homebot.models import HelpEntry
+from homebot.models import HelpEntry, Message
 
 
 class TextTable(Formatter):
     """Transforms an iterable of help entries into a text table representation."""
 
-    @typechecked(always=True)
-    def __init__(self, usage_width: int = 40, description_width: int = 80,
-                 **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(self, usage_width: int = 40, description_width: int = 80):
         self.usage_width = usage_width
         self.description_width = description_width
 
-    @typechecked(always=True)
-    async def __call__(self, payload: Iterable[HelpEntry]) -> Any:
-        # TODO: Check payload for iterable of HelpEntry
+    async def __call__(self, message: Message, payload: Iterable[HelpEntry]) -> str:
         rows = [
             [
                 h.command,
@@ -37,4 +31,4 @@ class TextTable(Formatter):
         table = AsciiTable(data)
         table.inner_row_border = True
 
-        return await super().__call__(table.table)
+        return str(table.table)

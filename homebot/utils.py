@@ -34,6 +34,22 @@ def make_list(value: Any, null_empty: bool = True) -> Optional[List[Any]]:
     return [value]
 
 
+def interpolate(format_: str, **context: Any) -> str:
+    """
+    Dynamically interpolates a format by using a given context.
+
+    Example:
+
+        >>> interpolate('{payload}', payload=12)
+        '12'
+        >>> interpolate('{payload.upper()}', payload="a")
+        'A'
+        >>> interpolate('{(a - b):0.2f}', a=10, b=4.999)
+        '5.00'
+    """
+    return cast(str, eval(f'f{format_!r}', None, context))  # pylint: disable=eval-used
+
+
 class classproperty(property):  # pylint: disable=invalid-name
     """
     Decorator classproperty:
