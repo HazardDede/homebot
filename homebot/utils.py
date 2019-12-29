@@ -50,6 +50,41 @@ def interpolate(format_: str, **context: Any) -> str:
     return cast(str, eval(f'f{format_!r}', None, context))  # pylint: disable=eval-used
 
 
+def interpolate_complex(cplx: Any, **context: Any) -> Any:
+    """
+    f-String interpolates a complex structure (like a dict or list).
+
+    Examples:
+
+        >>> dut = interpolate_complex
+        >>> dut("{number}", number=42)  # str
+        '42'
+        >>> dut(["{one}", "{two}"], one=1, two=2)  # list
+        ['1', '2']
+        >>> dut(("{one}", "{two}"), one=1, two=2)  # tuple
+        ['1', '2']
+        >>> dut({'one': '{one}', '{two}': 'two'}, one=1, two=2)  # dict
+        {'one': '1', '2': 'two'}
+        >>> dut({'one': '{one}', '{two}': ["{one}", "{two}"]}, one=1, two=2)  # complex
+        {'one': '1', '2': ['1', '2']}
+        >>> dut(42, one=1, two=2)  # none of the above -> as is
+        42
+    """
+    # pylint: disable=invalid-name
+    def i(c: Any) -> Any:
+        if isinstance(c, dict):
+            return {i(k): i(v) for k, v in c.items()}
+        if is_iterable_but_no_str(c):
+            return [i(item) for item in c]
+        if isinstance(c, str):
+            return interpolate(c, **context)
+        return c
+
+    # pylint: enable=invalid-name
+
+    return i(cplx)
+
+
 class classproperty(property):  # pylint: disable=invalid-name
     """
     Decorator classproperty:

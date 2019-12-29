@@ -8,7 +8,7 @@ from typing import List, Callable, Awaitable, Dict, Any, Optional, Iterable
 import attr
 from mako.template import Template  # type: ignore
 
-from homebot.utils import interpolate
+from homebot.utils import interpolate_complex
 from homebot.validator import attrs_assert_type
 
 SlackTextPayload = str
@@ -180,18 +180,7 @@ class SlackMessageTemplate:
         return factory(file_path)
 
     def _render_json(self, **context: Any) -> SlackMessage:
-        # pylint: disable=invalid-name
-        def i(c: Any) -> Any:
-            if isinstance(c, dict):
-                return {i(k): i(v) for k, v in c.items()}
-            if isinstance(c, list):
-                return [i(item) for item in c]
-            if isinstance(c, str):
-                return interpolate(c, **context)
-            return c
-        # pylint: enable=invalid-name
-
-        rendered = i(self.template)
+        rendered = interpolate_complex(self.template, **context)
         if not isinstance(rendered, dict):
             raise RuntimeError(f"Rendered template needs to be a dict, but is {type(rendered)}")
 
