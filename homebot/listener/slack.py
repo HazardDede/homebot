@@ -11,7 +11,6 @@ from homebot.models import Message
 
 class DirectMention(Listener):
     """Listens for direct mentions of the bot in slack channels."""
-    # MENTION_REGEX = r'\<\@{id}\>'
     DIRECT_MENTION_REGEX = r'^\<\@{id}\>'
 
     def __init__(self, token: str, bot_id: str):
@@ -25,7 +24,6 @@ class DirectMention(Listener):
         )
         self._direct_mention_regex = re.compile(
             self.DIRECT_MENTION_REGEX.format(id=self._bot_id))
-        # self._mention_regex = re.compile(self.MENTION_REGEX.format(id=self._bot_id))
 
     async def _on_message(self, data: Dict[str, Any], **unused: Any) -> None:
         """Callback that is called on every message. The message text will be parsed

@@ -24,7 +24,7 @@
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "*${", ".join(item.products)}*: ${item.departure} - ${item.arrival} (+${item.delay_arrival})"
+				"text": "*${", ".join(item.products)}*: ${item.departure} (+_${item.delay_departure}_) to ${item.arrival} (+_${item.delay_arrival}_) - Total: *${item.travel_time}h*"
 			}
 		}
         %endfor

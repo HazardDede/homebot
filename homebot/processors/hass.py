@@ -1,7 +1,7 @@
 """Home assistant related processors."""
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
-from homebot.models import Message, HelpEntry, HassStateChange
+from homebot.models import HelpEntry, HassStateChange, Message, Context
 from homebot.processors.base import RegexProcessor
 from homebot.services.hass import HassApi
 
@@ -15,15 +15,15 @@ class OnOffSwitch(RegexProcessor):
         super().__init__(**kwargs)
         self.api = HassApi(base_url, token, timeout)
 
-    async def help(self) -> HelpEntry:
+    async def help(self) -> Optional[HelpEntry]:
         return HelpEntry(
             command=str(self.command),
             usage=f"{self.command} on|off <domain>.<entity>",
             description="Calls home assistant to turn on resp. off the passed entity."
         )
 
-    async def __call__(self, message: Message) -> Iterable[HassStateChange]:
-        match = await super().__call__(message)
+    async def __call__(self, ctx: Context, payload: Message) -> Iterable[HassStateChange]:
+        match = await super().__call__(ctx, payload)
         mode = match.group('mode')
         domain = match.group('domain')
         entity = match.group('entity')

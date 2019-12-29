@@ -14,7 +14,7 @@ def flake8(ctx):
         "flake8 "
         "--exclude=.tox "
         "--max-line-length 120 "
-        "--ignore=F401,E704,E722,E731,W503 "
+        "--ignore=E704,E722,E731,F401,F811,W503 "
         "{}".format(SOURCE_PATH)
     )
 

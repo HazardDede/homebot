@@ -2,6 +2,7 @@
 
 import copy
 import json
+import os
 from typing import List, Callable, Awaitable, Dict, Any, Optional
 
 import attr
@@ -18,19 +19,47 @@ SlackBlocksPayload = List[Dict[str, Any]]
 
 
 @attr.s
-class Message:
-    """A message returned from a listener."""
+class Payload:
+    """A payload returned from a listener."""
+
+    def clone(self) -> 'Payload':
+        """Clones this instance."""
+        return copy.deepcopy(self)
+
+
+@attr.s
+class Message(Payload):
+    """A payload returned from a listener."""
     text: str = attr.ib(converter=str)
     origin: str = attr.ib(converter=str)
     origin_user: str = attr.ib(converter=str)
     direct_mention: bool = attr.ib(converter=bool, default=False)
 
-    def clone(self) -> 'Message':
+
+@attr.s
+class ErrorPayload(Payload):
+    """A payload that contains an error message and a - optional - trace."""
+    error_message: str = attr.ib(converter=str)
+    trace: str = attr.ib(converter=str, default="No trace")
+
+
+@attr.s
+class UnknownCommandPayload(Payload):
+    """A payload that indicates an unknown command."""
+    command: str = attr.ib(converter=str)
+
+
+@attr.s
+class Context:
+    """Context."""
+    original_payload: Payload = attr.ib(validator=attrs_assert_type(Payload))
+
+    def clone(self) -> 'Context':
         """Clones this instance."""
-        return copy.copy(self)
+        return copy.deepcopy(self)
 
 
-ListenerCallback = Callable[[Message], Awaitable[None]]
+ListenerCallback = Callable[[Payload], Awaitable[None]]
 
 
 @attr.s
@@ -124,6 +153,22 @@ class SlackMessageTemplate:
         """Loads the mako template from a file and instantiatees an instance."""
         tpl = Template(filename=template_file)
         return cls(template=tpl, engine='mako')
+
+    @classmethod
+    def from_file(cls, file_path: str) -> 'SlackMessageTemplate':
+        """Loads the templatee from a file and instantiates an instance using the correct
+        factory method."""
+        ext_mapping = {
+            '.json': cls.from_json,
+            '.mako': cls.from_mako,
+            '.tpl': cls.from_mako
+        }
+        _, ext = os.path.splitext(file_path)
+        factory = ext_mapping.get(ext)
+        if not factory:
+            raise NotImplementedError(f"Template extension '{ext}' is not supported")
+
+        return factory(file_path)
 
     def _render_json(self, **context: Any) -> SlackMessage:
         # pylint: disable=invalid-name

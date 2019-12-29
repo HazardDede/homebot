@@ -4,7 +4,7 @@ from typing import Optional
 
 from typeguard import check_type
 
-from homebot.models import ListenerCallback, Message
+from homebot.models import ListenerCallback, Payload
 from homebot.utils import AutoStrMixin, LogMixin
 from homebot.validator import TypeGuardMeta
 
@@ -27,12 +27,12 @@ class Listener(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
         check_type('value', value, ListenerCallback)  # type: ignore
         self._callback = value
 
-    async def _fire_callback(self, message: Message) -> None:
+    async def _fire_callback(self, payload: Payload) -> None:
         """Helper method to trigger the callback with the given message."""
         if not self._callback:
             return
         try:
-            asyncio.create_task(self._callback(message))
+            asyncio.create_task(self._callback(payload))
         except Exception:  # pylint: disable=broad-except
             self.logger.exception("Error caught during execution of callback")
 

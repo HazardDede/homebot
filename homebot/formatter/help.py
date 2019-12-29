@@ -6,7 +6,7 @@ from typing import Iterable
 from terminaltables import AsciiTable  # type: ignore
 
 from homebot.formatter.base import Formatter
-from homebot.models import HelpEntry, Message
+from homebot.models import HelpEntry, Context
 
 
 class TextTable(Formatter):
@@ -16,7 +16,7 @@ class TextTable(Formatter):
         self.usage_width = usage_width
         self.description_width = description_width
 
-    async def __call__(self, message: Message, payload: Iterable[HelpEntry]) -> str:
+    async def __call__(self, ctx: Context, payload: Iterable[HelpEntry]) -> str:
         rows = [
             [
                 h.command,

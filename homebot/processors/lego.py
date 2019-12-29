@@ -1,12 +1,12 @@
 """Lego related processors."""
 import re
-from typing import Tuple
+from typing import Tuple, Optional
 
 import httpx
 import pandas as pd  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 
-from homebot.models import HelpEntry, Message, LegoPricing
+from homebot.models import HelpEntry, LegoPricing, Message, Context
 from homebot.processors.base import RegexProcessor
 
 
@@ -24,7 +24,7 @@ class Pricing(RegexProcessor):
     USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 " \
                  "(KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36"
 
-    async def help(self) -> HelpEntry:
+    async def help(self) -> Optional[HelpEntry]:
         return HelpEntry(
             command=str(self.command),
             usage="{} <set id>".format(self.command),
@@ -70,8 +70,8 @@ class Pricing(RegexProcessor):
                 f"Image tag for lego set '{set_id}' was not found in the html content.")
         return str(image_tag['src'])
 
-    async def __call__(self, message: Message) -> LegoPricing:
-        match = await super().__call__(message)
+    async def __call__(self, ctx: Context, payload: Message) -> LegoPricing:
+        match = await super().__call__(ctx, payload)
         set_id = int(match.group('set_id').strip())
 
         resp = await httpx.get(

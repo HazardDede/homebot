@@ -4,7 +4,7 @@ from typing import Any, Dict
 import slack  # type: ignore
 
 from homebot.actions.base import Action
-from homebot.models import Message, SlackMessage
+from homebot.models import SlackMessage, Message, Context
 
 
 class SendMessage(Action):
@@ -16,9 +16,12 @@ class SendMessage(Action):
             run_async=True
         )
 
-    async def __call__(self, message: Message, payload: Any) -> None:
+    async def __call__(self, ctx: Context, payload: Any) -> None:
         """Performs the action. Sends the payload to a slack channel."""
-        args: Dict[str, Any] = {'channel': message.origin}
+        if not isinstance(ctx.original_payload, Message):
+            raise RuntimeError("The source payload does not provide a destination channel.")
+
+        args: Dict[str, Any] = {'channel': ctx.original_payload.origin}
 
         if isinstance(payload, SlackMessage):
             args = {

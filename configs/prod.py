@@ -1,6 +1,6 @@
 import os
 
-from homebot import ErrorFlow, ActionFlow, Orchestrator
+from homebot import Flow, Orchestrator
 from homebot import actions
 from homebot import formatter as fmt
 from homebot import listener
@@ -29,29 +29,44 @@ help_processor = processors.Help()
 
 listener = listener.slack.DirectMention(token=SLACK_TOKEN, bot_id=SLACK_BOT_ID)
 flows = [
-    ActionFlow(
+    Flow(
+        processor=processors.ErrorProcessor(),
+        formatters=[fmt.StringFormat(
+            "Processing of `{ctx.original_payload}` failed: `{payload.error_message}`\n"
+            "```{payload.trace}```"
+        )],
+        actions=[slack_action]
+    ),
+    Flow(
+        processor=processors.UnknownCommandProcessor(),
+        formatters=[fmt.StringFormat(
+            f"Command is invalid: `{{payload.command}}`. Try `{help_processor.command}`."
+        )],
+        actions=[slack_action]
+    ),
+    Flow(
         processor=processors.Version(),
         formatters=[
             fmt.StringFormat("Homebot version `{payload}` is up and running...")
         ],
         actions=[slack_action]
     ),
-    ActionFlow(
+    Flow(
         processor=help_processor,
         formatters=[fmt.help.TextTable(), fmt.slack.Codify()],
         actions=[slack_action]
     ),
-    ActionFlow(
+    Flow(
         processor=processors.traffic.Traffic(services.traffic.DeutscheBahn()),
         formatters=[fmt.slack.Template.from_file(TPL_TRAFFIC_TRAIN)],
         actions=[slack_action]
     ),
-    ActionFlow(
+    Flow(
         processor=processors.lego.Pricing(),
         formatters=[fmt.slack.Template.from_file(TPL_LEGO_PRICING)],
         actions=[slack_action]
     ),
-    ActionFlow(
+    Flow(
         processor=processors.hass.OnOffSwitch(
             base_url='http://localhost:8123',
             token=HASS_TOKEN
@@ -60,12 +75,4 @@ flows = [
         actions=[slack_action]
     )
 ]
-error_flow = ErrorFlow(
-    unknown_command_message="Command is invalid: `{{message.text}}`. Try `{}`.".format(
-        help_processor.command
-    ),
-    error_message="Processing of `{message.text}` failed: `{error_message}`\n```{trace}```",
-    formatters=[],
-    actions=[slack_action]
-)
-orchestra = Orchestrator(listener, flows, error_flow=error_flow)
+orchestra = Orchestrator(listener, flows)

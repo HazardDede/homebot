@@ -3,7 +3,8 @@ listeners."""
 import re
 from typing import Any, Optional, Iterable, Match
 
-from homebot.models import HelpEntry, Message
+from homebot.models import HelpEntry, Payload, Message, Context, ErrorPayload, \
+    UnknownCommandPayload
 from homebot.utils import AutoStrMixin, LogMixin
 from homebot.validator import TypeGuardMeta
 
@@ -14,17 +15,44 @@ class Processor(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
     def __init__(self, **kwargs: Any):
         self.orchestrator: Optional['Orchestrator'] = None  # type: ignore
 
-    async def help(self) -> HelpEntry:
+    async def help(self) -> Optional[HelpEntry]:
         """Return the help entry for this processor."""
         raise NotImplementedError()
 
-    async def can_process(self, message: Message) -> bool:
+    async def can_process(self, payload: Payload) -> bool:
         """Checks if the processor can process the given message."""
         raise NotImplementedError()
 
-    async def __call__(self, message: Message) -> Any:
+    # We need to type payload with Any. Otherwise the typing of the childs will be invalid
+    async def __call__(self, ctx: Context, payload: Any) -> Any:
         """Process the given message."""
         raise NotImplementedError()
+
+
+class ErrorProcessor(Processor):
+    """Processor to handle the ErrorPayload."""
+
+    async def help(self) -> Optional[HelpEntry]:
+        return None
+
+    async def can_process(self, payload: Payload) -> bool:
+        return isinstance(payload, ErrorPayload)
+
+    async def __call__(self, ctx: Context, payload: ErrorPayload) -> ErrorPayload:
+        return payload
+
+
+class UnknownCommandProcessor(Processor):
+    """Processor to handle the an unknown command."""
+
+    async def help(self) -> Optional[HelpEntry]:
+        return None
+
+    async def can_process(self, payload: Payload) -> bool:
+        return isinstance(payload, UnknownCommandPayload)
+
+    async def __call__(self, ctx: Context, payload: UnknownCommandPayload) -> UnknownCommandPayload:
+        return payload
 
 
 class RegexProcessor(Processor):
@@ -51,7 +79,7 @@ class RegexProcessor(Processor):
             re.IGNORECASE
         )
 
-    async def help(self) -> HelpEntry:
+    async def help(self) -> Optional[HelpEntry]:
         """Return the help entry for this processor."""
         return HelpEntry(
             command=str(self.command),
@@ -62,11 +90,13 @@ class RegexProcessor(Processor):
     async def _try_match(self, message: Message) -> Optional[Match[str]]:
         return self._regex.match(message.text)
 
-    async def can_process(self, message: Message) -> bool:
-        return await self._try_match(message) is not None
+    async def can_process(self, payload: Payload) -> bool:
+        if not isinstance(payload, Message):
+            return False
+        return await self._try_match(payload) is not None
 
-    async def __call__(self, message: Message) -> Any:
-        match = await self._try_match(message)
+    async def __call__(self, ctx: Context, payload: Message) -> Any:
+        match = await self._try_match(payload)
         if not match:
             raise RuntimeError(
                 "Processor is called with a message that is not supported. "
@@ -81,21 +111,25 @@ class Help(RegexProcessor):
 
     DEFAULT_COMMAND = 'help'
 
-    async def help(self) -> HelpEntry:
-        res = await super().help()
-        res.description = "Shows this help page."
-        return res
+    async def help(self) -> Optional[HelpEntry]:
+        return HelpEntry(
+            command=str(self.command),
+            usage=str(self.command),
+            description="Shows this help page."
+        )
 
     async def _collect(self) -> Iterable[HelpEntry]:
         """Collects all the help entries of all message processors for the current
         orchestra."""
         if not self.orchestrator or not self.orchestrator.flows:
-            return [await self.help()]
+            this_help = await self.help()
+            return [this_help] if this_help else []
 
-        return [await handler.processor.help() for handler in self.orchestrator.flows]
+        entries = [await handler.processor.help() for handler in self.orchestrator.flows]
+        return [entry for entry in entries if entry]  # Only non None
 
-    async def __call__(self, message: Message) -> Iterable[HelpEntry]:
-        await super().__call__(message)
+    async def __call__(self, ctx: Context, payload: Message) -> Iterable[HelpEntry]:
+        await super().__call__(ctx, payload)
         return await self._collect()
 
 
@@ -104,12 +138,14 @@ class Version(RegexProcessor):
 
     DEFAULT_COMMAND = 'version'
 
-    async def help(self) -> HelpEntry:
-        res = await super().help()
-        res.description = "Shows the version of homebot."
-        return res
+    async def help(self) -> Optional[HelpEntry]:
+        return HelpEntry(
+            command=str(self.command),
+            usage=str(self.command),
+            description="Shows the version of homebot."
+        )
 
-    async def __call__(self, message: Message) -> str:
-        await super().__call__(message)
+    async def __call__(self, ctx: Context, payload: Message) -> str:
+        await super().__call__(ctx, payload)
         from homebot.config import __VERSION__
         return __VERSION__

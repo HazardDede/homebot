@@ -2,7 +2,7 @@
 message processors."""
 from typing import Any
 
-from homebot.models import Message
+from homebot.models import Context
 from homebot.utils import AutoStrMixin, LogMixin, interpolate
 from homebot.validator import TypeGuardMeta
 
@@ -10,7 +10,7 @@ from homebot.validator import TypeGuardMeta
 class Formatter(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
     """Base class for all formatters. Introduces the interface to respect."""
 
-    async def __call__(self, message: Message, payload: Any) -> Any:
+    async def __call__(self, ctx: Context, payload: Any) -> Any:
         """Performs the formatting."""
         raise NotImplementedError()
 
@@ -21,14 +21,14 @@ class StringFormat(Formatter):
     Example:
 
         >>> import asyncio
+        >>> from homebot.models import Payload
         >>> dut = StringFormat("This is the number: {payload}")
-        >>> msg = Message(text="", origin="", origin_user="", direct_mention=True)
-        >>> asyncio.run(dut(msg, 42))
+        >>> asyncio.run(dut(Context(Payload()), 42))
         'This is the number: 42'
     """
 
     def __init__(self, formatting: str):
         self._format = str(formatting)
 
-    async def __call__(self, message: Message, payload: Any) -> str:
-        return interpolate(self._format, message=message, payload=payload)
+    async def __call__(self, ctx: Context, payload: Any) -> str:
+        return interpolate(self._format, ctx=ctx, payload=payload)

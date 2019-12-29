@@ -1,15 +1,15 @@
 """Contains base code for flow items and the orchestrator itself."""
 import asyncio
-from typing import Iterable, Any, Optional, Union
+from typing import Iterable, Any, Optional
 
 import attr
 
 from homebot import actions as act
-from homebot.flows import ActionFlow, ErrorFlow, DEFAULT_ERROR_FLOW
+from homebot.flows import Flow
 from homebot.formatter import Formatter
 from homebot.listener import Listener
-from homebot.models import Message
-from homebot.utils import make_list, interpolate
+from homebot.models import Payload, Context, UnknownCommandPayload, ErrorPayload, Message
+from homebot.utils import make_list, LogMixin
 from homebot.validator import (
     attrs_assert_type,
     attrs_assert_iterable
@@ -17,19 +17,15 @@ from homebot.validator import (
 
 
 @attr.s
-class Orchestrator:
+class Orchestrator(LogMixin):
     """Orchestrates multiple flows and one listener into a runnable application."""
 
     listener: Listener = attr.ib(
         validator=attrs_assert_type(Listener)
     )
-    flows: Iterable[ActionFlow] = attr.ib(
+    flows: Iterable[Flow] = attr.ib(
         converter=make_list,
-        validator=attrs_assert_iterable(ActionFlow),
-    )
-    error_flow: ErrorFlow = attr.ib(
-        default=DEFAULT_ERROR_FLOW,
-        validator=attrs_assert_type(ErrorFlow)
+        validator=attrs_assert_iterable(Flow),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -37,23 +33,19 @@ class Orchestrator:
             flw.processor.orchestrator = self
 
     async def _call_formatters(
-            self, formatters: Iterable[Formatter], message: Message, payload: Any
+            self, formatters: Iterable[Formatter], ctx: Context, payload: Any
     ) -> Any:
         for formatter in formatters:
-            payload = await formatter(message.clone(), payload)
+            payload = await formatter(ctx.clone(), payload)
         return payload
 
     async def _call_actions(
-            self, actions: Iterable[act.Action], message: Message, payload: Any
+            self, actions: Iterable[act.Action], ctx: Context, payload: Any
     ) -> None:
-        coros = [action(message.clone(), payload) for action in actions]
+        coros = [action(ctx.clone(), payload) for action in actions]
         await asyncio.gather(*coros)
 
-    async def _run_flow(self, flow: Union[ErrorFlow, ActionFlow], message: Message, payload: Any) -> None:
-        payload = await self._call_formatters(flow.formatters, message, payload)
-        await self._call_actions(flow.actions, message, payload)
-
-    async def _handle_error(self, message: Message, error_message: Optional[str] = None) -> None:
+    async def _handle_error(self, ctx: Context, error_message: Optional[str] = None) -> None:
         if not error_message:
             import sys
             import traceback
@@ -63,33 +55,47 @@ class Orchestrator:
         else:
             trace = "No trace"
 
-        printable_msg = interpolate(
-            self.error_flow.error_message,
-            error_message=error_message, trace=trace, message=message
-        )
-        await self._run_flow(self.error_flow, message, printable_msg)
+        await self._handle_incoming(ErrorPayload(error_message, trace), ctx)
 
-    async def _handle_unhandled(self, message: Message) -> None:
-        printable_message = interpolate(
-            self.error_flow.unknown_command_message,
-            message=message
-        )
-        await self._run_flow(self.error_flow, message, printable_message)
+    async def _handle_unhandled(self, ctx: Context) -> None:
+        command = "unknown"
+        if isinstance(ctx.original_payload, Message):
+            command = str(ctx.original_payload.text)
+        await self._handle_incoming(UnknownCommandPayload(command), ctx)
 
-    async def _handle_incoming(self, message: Message) -> None:
+    async def _handle_incoming(self, payload: Payload, ctx: Optional[Context] = None) -> None:
         """Kicks of the flow for one message. This is the callback for the listener."""
+        # Context might be set in case of an error or an unknown message that needs to be
+        # handled
+        if not ctx:
+            ctx = Context(original_payload=payload)
+
         handled = False
         for flow in self.flows:
             try:
-                if await flow.processor.can_process(message.clone()):
+                if await flow.processor.can_process(payload.clone()):
                     handled = True
-                    payload = await flow.processor(message.clone())
-                    await self._run_flow(flow, message, payload)
+                    current = payload.clone()
+                    current = await flow.processor(ctx.clone(), current)
+                    current = await self._call_formatters(flow.formatters, ctx, current)
+                    await self._call_actions(flow.actions, ctx, current)
             except:  # pylint: disable=bare-except
-                await self._handle_error(message)
+                self.logger.exception("Error caught while processing the payload:\n%s", str(payload))
+                handled = True
+                if not isinstance(payload, ErrorPayload):
+                    await self._handle_error(ctx)
+                else:
+                    self.logger.warning("While handling the error a new error was caught. Aborting... ")
 
         if not handled:
-            await self._handle_unhandled(message)
+            if not isinstance(payload, UnknownCommandPayload):
+                await self._handle_unhandled(ctx)
+            else:
+                self.logger.warning(
+                    "Incoming '%s' cannot be handled and no "
+                    "unknown command processor is configured.",
+                    str(ctx.original_payload)
+                )
 
     async def run(self) -> None:
         """Run the application. Will start the listener and kick of the flow on incoming
