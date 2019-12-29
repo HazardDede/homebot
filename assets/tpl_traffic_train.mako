@@ -4,7 +4,7 @@
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": ":train2: |     *Directions*    | :train2: "
+				"text": ":train2: |     *Directions* for *${payload.origin}* to *${payload.destination}*  | :train2: "
 			}
 		},
         {
@@ -19,7 +19,7 @@
             }
         }
         %else:
-        %for item in payload:
+        %for item in payload.connections:
 		,{
 			"type": "section",
 			"text": {

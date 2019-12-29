@@ -1,5 +1,4 @@
 """Contains base services."""
-from typing import Iterable
 
 from typeguard import typechecked
 
@@ -16,6 +15,6 @@ class TrafficService(AutoStrMixin):
     async def pull(  # pylint: disable=method-hidden
             self, origin: str, destination: str, only_direct: bool = False,
             offset: int = 0
-    ) -> Iterable[TrafficInfo]:
+    ) -> TrafficInfo:
         """Pulls the data from the service."""
         raise NotImplementedError()

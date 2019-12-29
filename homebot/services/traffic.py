@@ -5,7 +5,7 @@ from typing import Iterable, Any, Dict, cast, List
 
 from schiene import Schiene  # type: ignore
 
-from homebot.models import TrafficInfo
+from homebot.models import TrafficInfo, TrafficConnection
 from homebot.services.base import TrafficService
 
 
@@ -14,12 +14,10 @@ class DeutscheBahn(TrafficService):
     destination."""
 
     @classmethod
-    async def _mk_info(
-            cls, payload: Dict[str, Any], origin: str, destination: str
-    ) -> TrafficInfo:
-        return TrafficInfo(
-            origin=origin,
-            destination=destination,
+    async def _mk_conn(
+            cls, payload: Dict[str, Any]
+    ) -> TrafficConnection:
+        return TrafficConnection(
             arrival=str(payload.get('arrival', '')),
             canceled=bool(payload.get('canceled', False)),
             departure=str(payload.get('departure', '')),
@@ -46,7 +44,7 @@ class DeutscheBahn(TrafficService):
     async def pull(  # pylint: disable=method-hidden
             self, origin: str, destination: str, only_direct: bool = False,
             offset: int = 0
-    ) -> Iterable[TrafficInfo]:
+    ) -> TrafficInfo:
         origin = str(origin)
         destination = str(destination)
         only_direct = bool(only_direct)
@@ -56,7 +54,12 @@ class DeutscheBahn(TrafficService):
             None, self._connections,
             origin, destination, offset, only_direct
         )
-        return [
-            await self._mk_info(conn, origin, destination)
+        parsed_connections = [
+            await self._mk_conn(conn)
             for conn in connections
         ]
+        return TrafficInfo(
+            origin=origin,
+            destination=destination,
+            connections=parsed_connections
+        )

@@ -1,5 +1,5 @@
 """Contains processors for retrieving traffic information."""
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
 
 from homebot.models import HelpEntry, TrafficInfo, Message, Context
 from homebot.processors.base import RegexProcessor
@@ -26,7 +26,7 @@ class Traffic(RegexProcessor):
                         "it will be set to 0 minutes (which means now)."
         )
 
-    async def __call__(self, ctx: Context, payload: Message) -> Iterable[TrafficInfo]:
+    async def __call__(self, ctx: Context, payload: Message) -> TrafficInfo:
         match = await super().__call__(ctx, payload)
         source = match.group('source').strip()
         target = match.group('target').strip()

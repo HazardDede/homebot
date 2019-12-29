@@ -3,7 +3,7 @@
 import copy
 import json
 import os
-from typing import List, Callable, Awaitable, Dict, Any, Optional
+from typing import List, Callable, Awaitable, Dict, Any, Optional, Iterable
 
 import attr
 from mako.template import Template  # type: ignore
@@ -71,13 +71,11 @@ class HelpEntry:
 
 
 @attr.s
-class TrafficInfo:
-    """Traffic info data container."""
+class TrafficConnection:
+    """Traffic connection data container."""
     # TODO: Typing
     # TODO: Maybe parsing arrival / departure into real time
     # TODO: Maybe parsing travel_time into duration
-    origin: str = attr.ib()
-    destination: str = attr.ib()
     arrival: str = attr.ib()
     canceled: bool = attr.ib()
     departure: str = attr.ib()
@@ -87,6 +85,17 @@ class TrafficInfo:
     delayed: bool = attr.ib()
     delay_departure: int = attr.ib()
     delay_arrival: int = attr.ib()
+
+
+@attr.s
+class TrafficInfo:
+    """Traffic info (multiple connections) data container."""
+    origin: str = attr.ib(validator=attrs_assert_type(str))
+    destination: str = attr.ib(validator=attrs_assert_type(str))
+
+    connections: Iterable[TrafficConnection] = attr.ib(
+        validator=attrs_assert_type(Iterable[TrafficConnection])
+    )
 
 
 @attr.s
