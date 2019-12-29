@@ -1,20 +1,38 @@
 import pytest
 
-from homebot.models import Message, Context, Payload
+import homebot.processors as proc
+from homebot import Orchestrator, Flow
+from homebot.listener import Listener
+from homebot.models import Context, Payload, Message
+
+
+class DummyListener(Listener):
+    async def start(self) -> None:
+        pass
 
 
 @pytest.yield_fixture(scope='function')
-def dummy_message():
+def orchestrator():
+    return Orchestrator(
+        listener=DummyListener(),
+        flows=[
+            Flow(processor=proc.Version(), formatters=[], actions=[])
+        ]
+    )
+
+
+@pytest.yield_fixture(scope='function')
+def message():
     return Message(
-        text="This is the text",
-        origin='#general',
-        origin_user='the_user',
+        text="",
+        origin_user="user",
+        origin="channel",
         direct_mention=True
     )
 
 
 @pytest.yield_fixture(scope='function')
-def dummy_context():
+def ctx():
     return Context(
         original_payload=Payload()
     )
