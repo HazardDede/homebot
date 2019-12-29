@@ -7,11 +7,13 @@ from homebot.validator import is_iterable_but_no_str
 
 
 def make_list(value: Any, null_empty: bool = True) -> Optional[List[Any]]:
-    """Makes a list out of the given value. If value is a list, nothing is changed.
+    """
+    Makes a list out of the given value. If value is a list, nothing is changed.
     If value is an iterable (but no str), it will be converted to a list. If list is
     either a list nor an iterable it will be converted to a single element list.
     If value is None and null_empty is True an empty list will returned; if null_empty
     is False None will be returned.
+
     Example:
         >>> make_list(['list'])
         ['list']
@@ -90,6 +92,7 @@ class classproperty(property):  # pylint: disable=invalid-name
     Decorator classproperty:
     Make class methods look like read-only class properties.
     Writing to that classproperty will not do what you expect ;-)
+
     Examples:
         >>> class Foo(object):
         ...     _instance = 5
@@ -174,6 +177,7 @@ class LogMixin:
     """
     Adds a logger property to the class to provide easy access to a configured logging instance to
     use.
+
     Example:
         >>> class NeedsLogger(LogMixin):
         ...     def do(self, message):
