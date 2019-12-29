@@ -11,12 +11,6 @@ from mako.template import Template  # type: ignore
 from homebot.utils import interpolate_complex
 from homebot.validator import attrs_assert_type
 
-SlackTextPayload = str
-
-SlackAttachmentsPayload = List[Dict[str, Any]]
-
-SlackBlocksPayload = List[Dict[str, Any]]
-
 
 @attr.s
 class Payload:
@@ -116,6 +110,26 @@ class HassStateChange:
     friendly_name: str = attr.ib(validator=attrs_assert_type(str))
     entity_id: str = attr.ib(validator=attrs_assert_type(str))
     state: str = attr.ib(validator=attrs_assert_type(str))
+
+    @classmethod
+    def from_api_response(cls, resp: Any) -> Iterable['HassStateChange']:
+        """Returns a list of `HassStateChanges` parsed from an home assistant api response."""
+        print(resp)
+        return [
+            cls(
+                friendly_name=item.get('attributes', {}).get('friendly_name', ''),
+                entity_id=item.get('entity_id', ''),
+                state=item.get('state', 'unknown')
+            )
+            for item in resp
+        ]
+
+
+SlackTextPayload = str
+
+SlackAttachmentsPayload = List[Dict[str, Any]]
+
+SlackBlocksPayload = List[Dict[str, Any]]
 
 
 @attr.s

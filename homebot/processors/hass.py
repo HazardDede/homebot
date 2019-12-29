@@ -36,11 +36,4 @@ class OnOffSwitch(RegexProcessor):
         data = {'entity_id': f'{domain}.{entity}'}
         res = await self.api.call(endpoint, method=HassApi.METHOD_POST, data=data)
 
-        return [
-            HassStateChange(
-                friendly_name=item.get('attributes', {}).get('friendly_name', ''),
-                entity_id=item.get('entity_id', ''),
-                state=item.get('state', 'unknown')
-            )
-            for item in res
-        ]
+        return HassStateChange.from_api_response(res)
