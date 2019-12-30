@@ -114,7 +114,6 @@ class HassStateChange:
     @classmethod
     def from_api_response(cls, resp: Any) -> Iterable['HassStateChange']:
         """Returns a list of `HassStateChanges` parsed from an home assistant api response."""
-        print(resp)
         return [
             cls(
                 friendly_name=item.get('attributes', {}).get('friendly_name', ''),

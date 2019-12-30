@@ -9,7 +9,7 @@ from homebot.services.hass import HassApi
 class OnOffSwitch(RegexProcessor):
     """Home assistant on/off switching component for entities."""
     DEFAULT_COMMAND = 'switch'
-    MESSAGE_REGEX = r'^\s*{command}\s+(?P<mode>on|off)\s+(?P<domain>\w+)\.(?P<entity>\w+)$'
+    MESSAGE_REGEX = r'^\s*{command}\s+(?P<mode>on|off)\s+(?P<domain>\w+)\.(?P<entity>\w+)\s*$'
 
     def __init__(self, base_url: str, token: str, timeout: float = 5.0, **kwargs: Any):
         super().__init__(**kwargs)
@@ -24,9 +24,9 @@ class OnOffSwitch(RegexProcessor):
 
     async def __call__(self, ctx: Context, payload: Message) -> Iterable[HassStateChange]:
         match = await super().__call__(ctx, payload)
-        mode = match.group('mode')
-        domain = match.group('domain')
-        entity = match.group('entity')
+        mode = str(match.group('mode')).strip()
+        domain = str(match.group('domain')).strip()
+        entity = str(match.group('entity')).strip()
 
         if mode.lower() == 'on':
             endpoint = 'services/homeassistant/turn_on'
