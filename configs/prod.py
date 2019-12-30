@@ -30,7 +30,7 @@ help_processor = processors.Help()
 listener = listener.slack.DirectMention(token=SLACK_TOKEN, bot_id=SLACK_BOT_ID)
 flows = [
     Flow(
-        processor=processors.ErrorProcessor(),
+        processor=processors.Error(),
         formatters=[fmt.StringFormat(
             "Processing of `{ctx.original_payload}` failed: `{payload.error_message}`\n"
             "```{payload.trace}```"
@@ -38,7 +38,7 @@ flows = [
         actions=[slack_action]
     ),
     Flow(
-        processor=processors.UnknownCommandProcessor(),
+        processor=processors.UnknownCommand(),
         formatters=[fmt.StringFormat(
             f"Command is invalid: `{{payload.command}}`. Try `{help_processor.command}`."
         )],

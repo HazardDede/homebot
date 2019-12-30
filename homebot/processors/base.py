@@ -29,7 +29,7 @@ class Processor(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
         raise NotImplementedError()
 
 
-class ErrorProcessor(Processor):
+class Error(Processor):
     """Processor to handle the ErrorPayload."""
 
     async def help(self) -> Optional[HelpEntry]:
@@ -42,7 +42,7 @@ class ErrorProcessor(Processor):
         return payload
 
 
-class UnknownCommandProcessor(Processor):
+class UnknownCommand(Processor):
     """Processor to handle the an unknown command."""
 
     async def help(self) -> Optional[HelpEntry]:

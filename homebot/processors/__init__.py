@@ -2,8 +2,8 @@
 
 from homebot.processors import hass, lego, traffic
 from homebot.processors.base import (
-    ErrorProcessor, Help, Processor, RegexProcessor, UnknownCommandProcessor, Version
+    Error, Help, Processor, RegexProcessor, UnknownCommand, Version
 )
 
-__all__ = ['hass', 'lego', 'traffic', 'ErrorProcessor', 'Help', 'Processor',
-           'RegexProcessor', 'UnknownCommandProcessor', 'Version']
+__all__ = ['hass', 'lego', 'traffic', 'Error', 'Help', 'Processor',
+           'RegexProcessor', 'UnknownCommand', 'Version']
