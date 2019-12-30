@@ -3,7 +3,7 @@ import pytest
 import homebot.processors as proc
 from homebot import Orchestrator, Flow
 from homebot.listener import Listener
-from homebot.models import Context, Payload, Message
+from homebot.models import Context, Message
 
 
 class DummyListener(Listener):
@@ -32,7 +32,7 @@ def message():
 
 
 @pytest.yield_fixture(scope='function')
-def ctx():
+def ctx(message):
     return Context(
-        original_payload=Payload()
+        original_payload=message
     )
