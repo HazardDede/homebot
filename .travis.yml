@@ -6,7 +6,7 @@ before_install:
   - sudo apt-get install -yy gcc
 install:
   - pip install pip --upgrade
-  - pip install poetry --update
+  - pip install poetry --upgrade
   - poetry install
 script:
   - poetry run lint
