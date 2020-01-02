@@ -17,16 +17,16 @@ class Processor(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
 
     async def help(self) -> Optional[HelpEntry]:
         """Return the help entry for this processor."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     async def can_process(self, payload: Payload) -> bool:
         """Checks if the processor can process the given message."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     # We need to type payload with Any. Otherwise the typing of the childs will be invalid
     async def __call__(self, ctx: Context, payload: Any) -> Any:
         """Process the given message."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class Error(Processor):

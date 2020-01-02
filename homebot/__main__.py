@@ -34,7 +34,7 @@ class Runner:
         """
         _assert_config_file(config)
         module_path = os.path.dirname(config)
-        sys.path.append(module_path)
+        sys.path.insert(0, module_path)
         file_name = pathlib.Path(config).stem
         module = importlib.import_module(file_name)
 
@@ -68,4 +68,4 @@ class Runner:
 
 
 if __name__ == '__main__':
-    fire.Fire(Runner)
+    fire.Fire(Runner)  # pragma: no cover

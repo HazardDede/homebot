@@ -17,4 +17,4 @@ class TrafficService(AutoStrMixin):
             offset: int = 0
     ) -> TrafficInfo:
         """Pulls the data from the service."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover

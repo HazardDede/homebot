@@ -12,7 +12,7 @@ class Formatter(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
 
     async def __call__(self, ctx: Context, payload: Any) -> Any:
         """Performs the formatting."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class StringFormat(Formatter):

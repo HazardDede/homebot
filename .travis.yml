@@ -1,0 +1,15 @@
+language: python
+dist: xenial
+python:
+  - 3.7
+before_install:
+  - sudo apt-get install -yy gcc
+install:
+  - pip install pip --upgrade
+  - pip install poetry --update
+  - poetry install
+script:
+  - poetry run lint
+  - poetry run test
+after_success:
+  - coveralls

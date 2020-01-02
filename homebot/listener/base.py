@@ -38,4 +38,4 @@ class Listener(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
 
     async def start(self) -> None:
         """Run the listener."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
