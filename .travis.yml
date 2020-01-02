@@ -7,7 +7,7 @@ before_install:
 install:
   - pip install pip --upgrade
   - pip install poetry --upgrade
-  - poetry install
+  - poetry install --dev
 script:
   - poetry run lint
   - poetry run test
