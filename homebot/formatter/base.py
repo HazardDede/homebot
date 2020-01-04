@@ -21,9 +21,9 @@ class StringFormat(Formatter):
     Example:
 
         >>> import asyncio
-        >>> from homebot.models import Payload
+        >>> from homebot.models import Incoming
         >>> dut = StringFormat("This is the number: {payload}")
-        >>> asyncio.run(dut(Context(Payload()), 42))
+        >>> asyncio.run(dut(Context(Incoming()), 42))
         'This is the number: 42'
     """
 

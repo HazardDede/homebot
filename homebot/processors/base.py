@@ -3,8 +3,8 @@ listeners."""
 import re
 from typing import Any, Optional, Iterable, Match
 
-from homebot.models import HelpEntry, Payload, Message, Context, ErrorPayload, \
-    UnknownCommandPayload
+from homebot.models import HelpEntry, Incoming, MessageIncoming, Context, ErrorIncoming, \
+    UnknownCommandIncoming
 from homebot.utils import AutoStrMixin, LogMixin
 from homebot.validator import TypeGuardMeta
 
@@ -19,7 +19,7 @@ class Processor(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
         """Return the help entry for this processor."""
         raise NotImplementedError()  # pragma: no cover
 
-    async def can_process(self, payload: Payload) -> bool:
+    async def can_process(self, incoming: Incoming) -> bool:
         """Checks if the processor can process the given message."""
         raise NotImplementedError()  # pragma: no cover
 
@@ -35,10 +35,10 @@ class Error(Processor):
     async def help(self) -> Optional[HelpEntry]:
         return None
 
-    async def can_process(self, payload: Payload) -> bool:
-        return isinstance(payload, ErrorPayload)
+    async def can_process(self, incoming: Incoming) -> bool:
+        return isinstance(incoming, ErrorIncoming)
 
-    async def __call__(self, ctx: Context, payload: ErrorPayload) -> ErrorPayload:
+    async def __call__(self, ctx: Context, payload: ErrorIncoming) -> ErrorIncoming:
         return payload
 
 
@@ -48,10 +48,10 @@ class UnknownCommand(Processor):
     async def help(self) -> Optional[HelpEntry]:
         return None
 
-    async def can_process(self, payload: Payload) -> bool:
-        return isinstance(payload, UnknownCommandPayload)
+    async def can_process(self, incoming: Incoming) -> bool:
+        return isinstance(incoming, UnknownCommandIncoming)
 
-    async def __call__(self, ctx: Context, payload: UnknownCommandPayload) -> UnknownCommandPayload:
+    async def __call__(self, ctx: Context, payload: UnknownCommandIncoming) -> UnknownCommandIncoming:
         return payload
 
 
@@ -87,15 +87,15 @@ class RegexProcessor(Processor):
             description=""
         )
 
-    async def _try_match(self, message: Message) -> Optional[Match[str]]:
+    async def _try_match(self, message: MessageIncoming) -> Optional[Match[str]]:
         return self._regex.match(message.text)
 
-    async def can_process(self, payload: Payload) -> bool:
-        if not isinstance(payload, Message):
+    async def can_process(self, incoming: Incoming) -> bool:
+        if not isinstance(incoming, MessageIncoming):
             return False
-        return await self._try_match(payload) is not None
+        return await self._try_match(incoming) is not None
 
-    async def __call__(self, ctx: Context, payload: Message) -> Any:
+    async def __call__(self, ctx: Context, payload: MessageIncoming) -> Any:
         match = await self._try_match(payload)
         if not match:
             raise RuntimeError(
@@ -128,7 +128,7 @@ class Help(RegexProcessor):
         entries = [await handler.processor.help() for handler in self.orchestrator.flows]
         return [entry for entry in entries if entry]  # Only non None
 
-    async def __call__(self, ctx: Context, payload: Message) -> Iterable[HelpEntry]:
+    async def __call__(self, ctx: Context, payload: MessageIncoming) -> Iterable[HelpEntry]:
         await super().__call__(ctx, payload)
         return await self._collect()
 
@@ -145,7 +145,7 @@ class Version(RegexProcessor):
             description="Shows the version of homebot."
         )
 
-    async def __call__(self, ctx: Context, payload: Message) -> str:
+    async def __call__(self, ctx: Context, payload: MessageIncoming) -> str:
         await super().__call__(ctx, payload)
-        from homebot.config import __VERSION__
+        from homebot import __VERSION__
         return __VERSION__

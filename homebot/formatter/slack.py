@@ -1,4 +1,5 @@
 """Contains base classes for formatting payloads."""
+from pathlib import Path
 from typing import Any, overload, Union
 
 from homebot.formatter.base import Formatter
@@ -32,7 +33,7 @@ class Template(Formatter):
         self.template = template
 
     @classmethod
-    def from_file(cls, file_path: str) -> 'Template':
+    def from_file(cls, file_path: Union[str, Path]) -> 'Template':
         """Loads the layout from a json file and instantiates an instance."""
         return cls(SlackMessageTemplate.from_file(file_path))
 

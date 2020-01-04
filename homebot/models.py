@@ -3,7 +3,8 @@
 import copy
 import json
 import os
-from typing import List, Callable, Awaitable, Dict, Any, Optional, Iterable
+from pathlib import Path
+from typing import List, Callable, Awaitable, Dict, Any, Optional, Union
 
 import attr
 from mako.template import Template  # type: ignore
@@ -13,16 +14,16 @@ from homebot.validator import attrs_assert_type
 
 
 @attr.s
-class Payload:
+class Incoming:
     """A payload returned from a listener."""
 
-    def clone(self) -> 'Payload':
+    def clone(self) -> 'Incoming':
         """Clones this instance."""
         return copy.deepcopy(self)
 
 
 @attr.s
-class Message(Payload):
+class MessageIncoming(Incoming):
     """A payload returned from a listener."""
     text: str = attr.ib(converter=str)
     origin: str = attr.ib(converter=str)
@@ -31,14 +32,14 @@ class Message(Payload):
 
 
 @attr.s
-class ErrorPayload(Payload):
+class ErrorIncoming(Incoming):
     """A payload that contains an error message and a - optional - trace."""
     error_message: str = attr.ib(converter=str)
     trace: str = attr.ib(converter=str, default="No trace")
 
 
 @attr.s
-class UnknownCommandPayload(Payload):
+class UnknownCommandIncoming(Incoming):
     """A payload that indicates an unknown command."""
     command: str = attr.ib(converter=str)
 
@@ -46,14 +47,14 @@ class UnknownCommandPayload(Payload):
 @attr.s
 class Context:
     """Context."""
-    original_payload: Payload = attr.ib(validator=attrs_assert_type(Payload))
+    incoming: Incoming = attr.ib(validator=attrs_assert_type(Incoming))
 
     def clone(self) -> 'Context':
         """Clones this instance."""
         return copy.deepcopy(self)
 
 
-ListenerCallback = Callable[[Payload], Awaitable[None]]
+ListenerCallback = Callable[[Incoming], Awaitable[None]]
 
 
 @attr.s
@@ -62,66 +63,6 @@ class HelpEntry:
     command: str = attr.ib(converter=str)
     usage: str = attr.ib(converter=str)
     description: str = attr.ib(converter=str, default="")
-
-
-@attr.s
-class TrafficConnection:
-    """Traffic connection data container."""
-    # TODO: Typing
-    # TODO: Maybe parsing arrival / departure into real time
-    # TODO: Maybe parsing travel_time into duration
-    arrival: str = attr.ib()
-    canceled: bool = attr.ib()
-    departure: str = attr.ib()
-    products: List[str] = attr.ib()
-    transfers: int = attr.ib()
-    travel_time: str = attr.ib()
-    delayed: bool = attr.ib()
-    delay_departure: int = attr.ib()
-    delay_arrival: int = attr.ib()
-
-
-@attr.s
-class TrafficInfo:
-    """Traffic info (multiple connections) data container."""
-    origin: str = attr.ib(validator=attrs_assert_type(str))
-    destination: str = attr.ib(validator=attrs_assert_type(str))
-
-    connections: Iterable[TrafficConnection] = attr.ib(
-        validator=attrs_assert_type(Iterable[TrafficConnection])
-    )
-
-
-@attr.s
-class LegoPricing:
-    """Lego pricing data container."""
-    set_name: str = attr.ib(validator=attrs_assert_type(str))
-    set_id: int = attr.ib(validator=attrs_assert_type(int))
-    set_image_url: str = attr.ib(validator=attrs_assert_type(str))
-    current: float = attr.ib(validator=attrs_assert_type(float))
-    recommended: float = attr.ib(validator=attrs_assert_type(float))
-    highest: float = attr.ib(validator=attrs_assert_type(float))
-    lowest: float = attr.ib(validator=attrs_assert_type(float))
-
-
-@attr.s
-class HassStateChange:
-    """Home assistant state change data container."""
-    friendly_name: str = attr.ib(validator=attrs_assert_type(str))
-    entity_id: str = attr.ib(validator=attrs_assert_type(str))
-    state: str = attr.ib(validator=attrs_assert_type(str))
-
-    @classmethod
-    def from_api_response(cls, resp: Any) -> Iterable['HassStateChange']:
-        """Returns a list of `HassStateChanges` parsed from an home assistant api response."""
-        return [
-            cls(
-                friendly_name=item.get('attributes', {}).get('friendly_name', ''),
-                entity_id=item.get('entity_id', ''),
-                state=item.get('state', 'unknown')
-            )
-            for item in resp
-        ]
 
 
 SlackTextPayload = str
@@ -177,9 +118,11 @@ class SlackMessageTemplate:
         return cls(template=tpl, engine='mako')
 
     @classmethod
-    def from_file(cls, file_path: str) -> 'SlackMessageTemplate':
+    def from_file(cls, file_path: Union[str, Path]) -> 'SlackMessageTemplate':
         """Loads the templatee from a file and instantiates an instance using the correct
         factory method."""
+        if isinstance(file_path, Path):
+            file_path = str(file_path)
         ext_mapping = {
             '.json': cls.from_json,
             '.mako': cls.from_mako,

@@ -18,7 +18,7 @@ WORKDIR ${WORKDIR}
 COPY docker/ docker/
 RUN docker/setup_prereqs
 
-# Copy project configuration and lock file
+# Copy poetry project configuration and lock file
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry install --no-dev

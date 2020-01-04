@@ -2,12 +2,26 @@
 import re
 from typing import Tuple, Optional
 
+import attr
 import httpx
 import pandas as pd  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 
-from homebot.models import HelpEntry, LegoPricing, Message, Context
+from homebot.models import HelpEntry, MessageIncoming, Context
 from homebot.processors.base import RegexProcessor
+from homebot.validator import attrs_assert_type
+
+
+@attr.s
+class LegoPricing:
+    """Lego pricing data container."""
+    set_name: str = attr.ib(validator=attrs_assert_type(str))
+    set_id: int = attr.ib(validator=attrs_assert_type(int))
+    set_image_url: str = attr.ib(validator=attrs_assert_type(str))
+    current: float = attr.ib(validator=attrs_assert_type(float))
+    recommended: float = attr.ib(validator=attrs_assert_type(float))
+    highest: float = attr.ib(validator=attrs_assert_type(float))
+    lowest: float = attr.ib(validator=attrs_assert_type(float))
 
 
 class Pricing(RegexProcessor):
@@ -70,7 +84,7 @@ class Pricing(RegexProcessor):
                 f"Image tag for lego set '{set_id}' was not found in the html content.")
         return str(image_tag['src'])
 
-    async def __call__(self, ctx: Context, payload: Message) -> LegoPricing:
+    async def __call__(self, ctx: Context, payload: MessageIncoming) -> LegoPricing:
         match = await super().__call__(ctx, payload)
         set_id = int(match.group('set_id').strip())
 

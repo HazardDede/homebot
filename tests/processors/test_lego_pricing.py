@@ -5,8 +5,8 @@ from unittest import mock
 
 import pytest
 
-from homebot.models import Payload, ErrorPayload, UnknownCommandPayload, HelpEntry, LegoPricing
-from homebot.processors.lego import Pricing
+from homebot.models import Incoming, ErrorIncoming, UnknownCommandIncoming, HelpEntry
+from homebot.processors.lego import Pricing, LegoPricing
 
 
 @pytest.yield_fixture(scope='function')
@@ -20,10 +20,10 @@ def response():
 @pytest.mark.asyncio
 async def test_can_process(message):
     dut = Pricing()
-    assert not await dut.can_process(Payload())
+    assert not await dut.can_process(Incoming())
     assert not await dut.can_process(message)
-    assert not await dut.can_process(UnknownCommandPayload(command="foo"))
-    assert not await dut.can_process(ErrorPayload(error_message="blub", trace="bla"))
+    assert not await dut.can_process(UnknownCommandIncoming(command="foo"))
+    assert not await dut.can_process(ErrorIncoming(error_message="blub", trace="bla"))
 
     message.text = "  lego pricing   12345   "
     assert await dut.can_process(message)

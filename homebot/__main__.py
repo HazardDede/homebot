@@ -9,8 +9,8 @@ import sys
 
 import fire  # type: ignore
 
-from homebot import Orchestrator
-
+from homebot.assets import AssetManager
+from homebot.orchestra import Orchestrator
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -25,14 +25,11 @@ class Runner:
     """Homebot app."""
 
     @staticmethod
-    def run(config: str) -> None:
-        """
-        Runs the homebot with the specified configuration.
-
-        Args:
-            config (str): The config to load.
-        """
+    def _load_orchestrator_from_mobule(config: str) -> Orchestrator:
         _assert_config_file(config)
+        # Set base path for configuration
+        AssetManager().base_path = os.path.dirname(config)
+
         module_path = os.path.dirname(config)
         sys.path.insert(0, module_path)
         file_name = pathlib.Path(config).stem
@@ -49,6 +46,18 @@ class Runner:
             raise RuntimeError(f"Configuration '{str(config)}' does not include a "
                                f"Orchestrator.")
 
+        return orchestra
+
+    @staticmethod
+    def run(config: str) -> None:
+        """
+        Runs the homebot with the specified configuration.
+
+        Args:
+            config (str): The config to load.
+        """
+        orchestra = Runner._load_orchestrator_from_mobule(config)
+
         loop = asyncio.get_event_loop()
         loop.run_until_complete(orchestra.run())
 
@@ -63,8 +72,10 @@ class Runner:
             config (str): The config to validate.
         """
         _assert_config_file(config)
-
+        # First try to compile...
         py_compile.compile(config)
+        # ... then dummy load it
+        Runner._load_orchestrator_from_mobule(config)
 
 
 if __name__ == '__main__':

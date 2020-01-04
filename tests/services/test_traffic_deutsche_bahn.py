@@ -3,8 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from homebot.models import TrafficInfo, TrafficConnection
-from homebot.services.traffic import DeutscheBahn
+from homebot.services.traffic import DeutscheBahn, TrafficInfo, TrafficConnection
 
 
 @pytest.mark.asyncio

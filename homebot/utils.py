@@ -1,7 +1,7 @@
 """Utility functions."""
 import inspect
 import logging
-from typing import Any, List, Optional, cast, Iterable, Set
+from typing import Any, List, Optional, cast, Iterable, Set, Dict
 
 from homebot.validator import is_iterable_but_no_str
 
@@ -194,3 +194,22 @@ class LogMixin:
         """
         component = "{}.{}".format(cls.__module__, cls.__name__)  # pylint: disable=no-member
         return logging.getLogger(component)
+
+
+class Singleton(type):
+    """
+    Metaclass for singleton classes.
+
+    Examples:
+
+        >>> class Magic(metaclass=Singleton):
+        ...     pass
+        >>> Magic() is Magic()
+        True
+    """
+    _instances: Dict[type, type] = {}
+
+    def __call__(cls, *args: Any, **kwargs: Any) -> type:
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]

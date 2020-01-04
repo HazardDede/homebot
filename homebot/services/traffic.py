@@ -3,10 +3,54 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Iterable, Any, Dict, cast, List
 
+import attr
 from schiene import Schiene  # type: ignore
+from typeguard import typechecked
 
-from homebot.models import TrafficInfo, TrafficConnection
-from homebot.services.base import TrafficService
+from homebot.utils import AutoStrMixin
+from homebot.validator import attrs_assert_type
+
+
+@attr.s
+class TrafficConnection:
+    """Traffic connection data container."""
+    # TODO: Typing
+    # TODO: Maybe parsing arrival / departure into real time
+    # TODO: Maybe parsing travel_time into duration
+    arrival: str = attr.ib()
+    canceled: bool = attr.ib()
+    departure: str = attr.ib()
+    products: List[str] = attr.ib()
+    transfers: int = attr.ib()
+    travel_time: str = attr.ib()
+    delayed: bool = attr.ib()
+    delay_departure: int = attr.ib()
+    delay_arrival: int = attr.ib()
+
+
+@attr.s
+class TrafficInfo:
+    """Traffic info (multiple connections) data container."""
+    origin: str = attr.ib(validator=attrs_assert_type(str))
+    destination: str = attr.ib(validator=attrs_assert_type(str))
+
+    connections: Iterable[TrafficConnection] = attr.ib(
+        validator=attrs_assert_type(Iterable[TrafficConnection])
+    )
+
+
+class TrafficService(AutoStrMixin):
+    """Base traffic service. Defines the interface to respect."""
+
+    def __init__(self) -> None:
+        self.pull = typechecked(always=True)(self.pull)  # type: ignore
+
+    async def pull(  # pylint: disable=method-hidden
+            self, origin: str, destination: str, only_direct: bool = False,
+            offset: int = 0
+    ) -> TrafficInfo:
+        """Pulls the data from the service."""
+        raise NotImplementedError()  # pragma: no cover
 
 
 class DeutscheBahn(TrafficService):

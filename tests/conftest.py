@@ -8,7 +8,7 @@ from homebot import Orchestrator, Flow
 from homebot.actions import Action
 from homebot.formatter import Formatter
 from homebot.listener import Listener
-from homebot.models import Context, Message, Payload, HelpEntry
+from homebot.models import Context, MessageIncoming, Incoming, HelpEntry
 from homebot.processors import Processor
 
 
@@ -26,7 +26,7 @@ class PingListener(Listener):
 
     async def start(self) -> None:
         for _ in range(self.intervals):
-            msg = Message(
+            msg = MessageIncoming(
                 text="ping",
                 origin_user="user",
                 origin="channel",
@@ -40,10 +40,10 @@ class PingProcessor(Processor):
     async def help(self) -> Optional[HelpEntry]:
         return HelpEntry(command="ping", usage="ping", description="")
 
-    async def can_process(self, payload: Payload) -> bool:
-        if not hasattr(payload, 'text'):
+    async def can_process(self, incoming: Incoming) -> bool:
+        if not hasattr(incoming, 'text'):
             return False
-        return str(payload.text).lower() == 'ping'
+        return str(incoming.text).lower() == 'ping'
 
     async def __call__(self, ctx: Context, payload: Any) -> Any:
         return "pong"
@@ -79,7 +79,7 @@ def orchestrator():
 
 @pytest.yield_fixture(scope='function')
 def message():
-    return Message(
+    return MessageIncoming(
         text="ping",
         origin_user="user",
         origin="channel",
@@ -90,5 +90,5 @@ def message():
 @pytest.yield_fixture(scope='function')
 def ctx(message):
     return Context(
-        original_payload=message
+        incoming=message
     )

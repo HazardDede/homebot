@@ -6,7 +6,7 @@ from typing import Dict, Any
 import slack  # type: ignore
 
 from homebot.listener.base import Listener
-from homebot.models import Message
+from homebot.models import MessageIncoming
 
 
 class DirectMention(Listener):
@@ -41,7 +41,7 @@ class DirectMention(Listener):
         mention_match = self._direct_mention_regex.match(message_text)
         if mention_match:
             _, last = mention_match.span()
-            message = Message(
+            message = MessageIncoming(
                 text=message_text[last:].strip(),
                 origin=str(channel),
                 origin_user=str(user_id),

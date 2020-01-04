@@ -3,8 +3,8 @@ from unittest import mock
 
 import pytest
 
-from homebot.models import Payload, ErrorPayload, UnknownCommandPayload, HelpEntry, HassStateChange
-from homebot.processors.hass import OnOffSwitch
+from homebot.models import Incoming, ErrorIncoming, UnknownCommandIncoming, HelpEntry
+from homebot.processors.hass import OnOffSwitch, HassStateChange
 
 VALID_MESSAGE_TEXT = "switch on domain.switch_entity"
 API_RESPONSE = [
@@ -31,12 +31,12 @@ def dut(mock_api):
 
 @pytest.mark.asyncio
 async def test_can_process(message, dut):
-    assert not await dut.can_process(Payload())
+    assert not await dut.can_process(Incoming())
     assert not await dut.can_process(message)
     message.text = "  help   "
     assert not await dut.can_process(message)
-    assert not await dut.can_process(UnknownCommandPayload(command="foo"))
-    assert not await dut.can_process(ErrorPayload(error_message="blub", trace="bla"))
+    assert not await dut.can_process(UnknownCommandIncoming(command="foo"))
+    assert not await dut.can_process(ErrorIncoming(error_message="blub", trace="bla"))
 
     message.text = "  switch   on   domain.switch_entity   "
     assert await dut.can_process(message)

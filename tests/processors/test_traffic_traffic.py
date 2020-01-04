@@ -1,9 +1,9 @@
 import pytest
 
-from homebot.models import Payload, ErrorPayload, UnknownCommandPayload, HelpEntry, TrafficInfo, TrafficConnection
+from homebot.models import Incoming, ErrorIncoming, UnknownCommandIncoming, HelpEntry
 from homebot.processors import Help
 from homebot.processors.traffic import Traffic
-from homebot.services import TrafficService
+from homebot.services.traffic import TrafficService, TrafficInfo, TrafficConnection
 
 
 @pytest.yield_fixture(scope='function')
@@ -19,10 +19,10 @@ def dut():
 
 @pytest.mark.asyncio
 async def test_can_process(dut, message):
-    assert not await dut.can_process(Payload())
+    assert not await dut.can_process(Incoming())
     assert not await dut.can_process(message)
-    assert not await dut.can_process(UnknownCommandPayload(command="foo"))
-    assert not await dut.can_process(ErrorPayload(error_message="blub", trace="bla"))
+    assert not await dut.can_process(UnknownCommandIncoming(command="foo"))
+    assert not await dut.can_process(ErrorIncoming(error_message="blub", trace="bla"))
 
     message.text = "  traffic   origin    to      dest   "
     assert await dut.can_process(message)

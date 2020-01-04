@@ -8,7 +8,7 @@ from homebot import actions as act
 from homebot.flows import Flow
 from homebot.formatter import Formatter
 from homebot.listener import Listener
-from homebot.models import Payload, Context, UnknownCommandPayload, ErrorPayload, Message
+from homebot.models import Incoming, Context, UnknownCommandIncoming, ErrorIncoming, MessageIncoming
 from homebot.utils import make_list, LogMixin
 from homebot.validator import (
     attrs_assert_type,
@@ -55,46 +55,46 @@ class Orchestrator(LogMixin):
         else:
             trace = "No trace"
 
-        await self._handle_incoming(ErrorPayload(error_message, trace), ctx)
+        await self._handle_incoming(ErrorIncoming(error_message, trace), ctx)
 
     async def _handle_unhandled(self, ctx: Context) -> None:
         command = "unknown"
-        if isinstance(ctx.original_payload, Message):
-            command = str(ctx.original_payload.text)
-        await self._handle_incoming(UnknownCommandPayload(command), ctx)
+        if isinstance(ctx.incoming, MessageIncoming):
+            command = str(ctx.incoming.text)
+        await self._handle_incoming(UnknownCommandIncoming(command), ctx)
 
-    async def _handle_incoming(self, payload: Payload, ctx: Optional[Context] = None) -> None:
+    async def _handle_incoming(self, incoming: Incoming, ctx: Optional[Context] = None) -> None:
         """Kicks of the flow for one message. This is the callback for the listener."""
         # Context might be set in case of an error or an unknown message that needs to be
         # handled
         if not ctx:
-            ctx = Context(original_payload=payload)
+            ctx = Context(incoming=incoming)
 
         handled = False
         for flow in self.flows:
             try:
-                if await flow.processor.can_process(payload.clone()):
+                if await flow.processor.can_process(incoming.clone()):
                     handled = True
-                    current = payload.clone()
+                    current = incoming.clone()
                     current = await flow.processor(ctx.clone(), current)
                     current = await self._call_formatters(flow.formatters, ctx, current)
                     await self._call_actions(flow.actions, ctx, current)
             except:  # pylint: disable=bare-except
-                self.logger.exception("Error caught while processing the payload:\n%s", str(payload))
+                self.logger.exception("Error caught while processing the payload:\n%s", str(incoming))
                 handled = True
-                if not isinstance(payload, ErrorPayload):
+                if not isinstance(incoming, ErrorIncoming):
                     await self._handle_error(ctx)
                 else:
                     self.logger.warning("While handling the error a new error was caught. Aborting... ")
 
         if not handled:
-            if not isinstance(payload, UnknownCommandPayload):
+            if not isinstance(incoming, UnknownCommandIncoming):
                 await self._handle_unhandled(ctx)
             else:
                 self.logger.warning(
                     "Incoming '%s' cannot be handled and no "
                     "unknown command processor is configured.",
-                    str(ctx.original_payload)
+                    str(ctx.incoming)
                 )
 
     async def run(self) -> None:
