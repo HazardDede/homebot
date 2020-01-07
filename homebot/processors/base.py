@@ -74,8 +74,10 @@ class RegexProcessor(Processor):
         if not valid_cmd:
             raise ValueError(f"Argument 'command' ('{self.command}') is not a valid command.")
 
+        # Condense multiple spaces into regex pattern
+        command_regex = re.sub(r'\s+', ' ', self.command).strip().replace(' ', r'\s+')
         self._regex = re.compile(
-            self.MESSAGE_REGEX.format(command=re.escape(self.command)),
+            self.MESSAGE_REGEX.format(command=command_regex),
             re.IGNORECASE
         )
 

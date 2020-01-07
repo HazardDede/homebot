@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from homebot.utils import Singleton, AutoStrMixin, LogMixin
 
@@ -25,10 +25,36 @@ class TemplateDirectoryNotFoundError(AssetDirectoryNotFoundError):
     DEFAULT_MESSAGE = "The template directory could not be resolved. Probed:\n{}"
 
 
+class SecretNotFoundError(KeyError):
+    """Is raised when the secret could not be resolved."""
+
+    DEFAULT_MESSAGE = "The secret '{}' could not be resolved."
+
+    def __init__(self, secret_name: str):
+        super().__init__(self.DEFAULT_MESSAGE.format(secret_name))
+
+
 class AssetManager(AutoStrMixin, LogMixin, metaclass=Singleton):
     """Asset and template manager."""
     def __init__(self) -> None:
         self.base_path: Optional[str] = None
+
+    def _secret_from_env(self, secret_name: str) -> Optional[str]:
+        _ = self  # Fake usage
+        secret_name = str(secret_name)
+        return (
+            os.environ.get(secret_name)
+            or os.environ.get(secret_name.upper())
+            or os.environ.get(secret_name.lower())
+        )
+
+    def secret(self, secret_name: str) -> Any:
+        """Retrieves the secret with the given name from one of the possible secret stores.
+        Raises an error when the secret was not found."""
+        value = self._secret_from_env(secret_name)
+        if not value:
+            raise SecretNotFoundError(secret_name)
+        return value
 
     def assets_dir(self) -> Path:
         """
@@ -84,6 +110,7 @@ class AssetManager(AutoStrMixin, LogMixin, metaclass=Singleton):
 
     def template_path(self, template_name: str) -> Path:
         """Return the absolute path to the passed template name."""
+        template_name = str(template_name)
         file_path = self.templates_dir().joinpath(template_name)
         if not file_path.is_file():
             raise FileNotFoundError("Template '{}' is not a file".format(str(file_path)))

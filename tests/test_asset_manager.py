@@ -4,7 +4,7 @@ import pytest
 from argresolver.utils import modified_environ
 
 from homebot import AssetManager
-from homebot.assets import AssetDirectoryNotFoundError, TemplateDirectoryNotFoundError
+from homebot.assets import AssetDirectoryNotFoundError, TemplateDirectoryNotFoundError, SecretNotFoundError
 
 
 def test_singleton_instance():
@@ -29,6 +29,15 @@ def test_asset_dir():
     with modified_environ(ASSETS_DIR="i do not exist"):
         with pytest.raises(AssetDirectoryNotFoundError):
             dut.assets_dir()
+
+
+def test_secret():
+    dut = AssetManager()
+    with modified_environ('token', 'not_here', TOKEN='the_token'):
+        assert dut.secret('token') == 'the_token'
+        assert dut.secret('TOKEN') == 'the_token'
+        with pytest.raises(SecretNotFoundError, match="The secret 'not_here' could not be resolved."):
+            dut.secret('not_here')
 
 
 def test_template_dir():

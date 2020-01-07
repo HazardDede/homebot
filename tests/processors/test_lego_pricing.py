@@ -25,7 +25,7 @@ async def test_can_process(message):
     assert not await dut.can_process(UnknownCommandIncoming(command="foo"))
     assert not await dut.can_process(ErrorIncoming(error_message="blub", trace="bla"))
 
-    message.text = "  lego pricing   12345   "
+    message.text = "  lego       pricing   12345   "
     assert await dut.can_process(message)
 
 

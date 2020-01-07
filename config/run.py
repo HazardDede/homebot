@@ -11,21 +11,15 @@ from homebot import (
     services
 )
 
-SLACK_TOKEN = os.environ.get('SLACK_TOKEN')
-if not SLACK_TOKEN:
-    raise RuntimeError("You have to set SLACK_TOKEN as an environment variable.")
-
-SLACK_BOT_ID = os.environ.get('SLACK_BOT_ID')
-if not SLACK_BOT_ID:
-    raise RuntimeError("You have to set SLACK_BOT_ID as an environment variable.")
-
-HASS_TOKEN = os.environ.get('HASS_TOKEN')
-if not HASS_TOKEN:
-    raise RuntimeError("You have to set HASS_TOKEN as an environment variable.")
-
-
 assets = AssetManager()
 
+# Secrets
+SLACK_TOKEN = assets.secret('slack_token')
+SLACK_BOT_ID = assets.secret('slack_bot_id')
+HASS_URI = assets.secret('hass_uri')
+HASS_TOKEN = assets.secret('hass_token')
+
+# Template path
 TPL_LEGO_PRICING = assets.template_path('tpl_lego_pricing.json')
 TPL_HASS_STATE = assets.template_path('tpl_hass_state_change.mako')
 TPL_TRAFFIC_TRAIN = assets.template_path('tpl_traffic_train.mako')
@@ -74,7 +68,7 @@ flows = [
     ),
     Flow(
         processor=processors.hass.OnOffSwitch(
-            base_url='http://localhost:8123',
+            base_url=HASS_URI,
             token=HASS_TOKEN
         ),
         formatters=[fmt.slack.Template.from_file(TPL_HASS_STATE)],

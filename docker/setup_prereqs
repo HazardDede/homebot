@@ -1,14 +1,8 @@
 #!/bin/bash
 
-#
-# NOTICE: Keep in sync with setup_prereqs.arm
-#
-
-
 # Stop on errors
 set -e
 
-# Required debian packages for running pnp plugins
 PACKAGES=(
     # Some stuff needs to be compiled (c-source)
     gcc

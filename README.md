@@ -17,3 +17,16 @@ poetry install --dev
 ## Configuring
 
 TBD
+
+## Docker
+
+```bash
+docker build -t homebot .
+docker run -it --rm \
+    -v `pwd`/config:/config \
+    -e HASS_URI=${HASS_URI} \
+    -e HASS_TOKEN=${HASS_TOKEN} \
+    -e SLACK_TOKEN=${SLACK_TOKEN} \
+    -e SLACK_BOT_ID=${SLACK_BOT_ID} \
+    homebot
+```
