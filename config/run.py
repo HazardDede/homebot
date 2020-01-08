@@ -1,5 +1,3 @@
-import os
-
 from homebot import (
     AssetManager,
     Flow,
