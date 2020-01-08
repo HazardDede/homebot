@@ -18,8 +18,8 @@ RUN docker/setup_prereqs
 # Copy poetry project configuration and lock file
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --no-dev
+RUN docker/install_deps
 
 COPY . .
 
-CMD ["poetry", "run", "python", "homebot", "run", "/config/run.py"]
+CMD ["python", "homebot", "run", "/config/run.py"]

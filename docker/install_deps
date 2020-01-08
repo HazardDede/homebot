@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Stop on errors
+set -e
+
+echo ARCHITECTURE: `dpkg --print-architecture`
+
+poetry export --without-hashes -f requirements.txt > requirements.txt
+
+if [[ `dpkg --print-architecture` == "armhf" ]]; then
+    pip3 install --no-cache-dir \
+        --extra-index-url https://www.piwheels.hostedpi.com/simple \
+        -r requirements.txt
+else
+    pip3 install --no-cache-dir \
+        -r requirements.txt
+fi
