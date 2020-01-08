@@ -21,12 +21,12 @@ TBD
 ## Docker
 
 ```bash
-docker build -t homebot .
+docker build -t hazard/homebot .
 docker run -it --rm \
     -v `pwd`/config:/config \
     -e HASS_URI=${HASS_URI} \
     -e HASS_TOKEN=${HASS_TOKEN} \
     -e SLACK_TOKEN=${SLACK_TOKEN} \
     -e SLACK_BOT_ID=${SLACK_BOT_ID} \
-    homebot
+    hazard/homebot
 ```

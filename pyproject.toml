@@ -5,6 +5,10 @@ description = "The smart bot to the rescue to automate tedious tasks around your
 authors = ["Dennis Muth <d.muth@gmx.net>"]
 license = "MIT"
 
+[[tool.poetry.source]]
+name = "piwheels"
+url = "https://www.piwheels.org/simple"
+
 [tool.poetry.dependencies]
 python = "^3.7"
 attrs = "^19.3.0"

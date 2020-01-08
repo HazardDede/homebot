@@ -3,10 +3,20 @@
 # Stop on errors
 set -e
 
-PACKAGES=(
-    # Some stuff needs to be compiled (c-source)
-    gcc
-)
+if [[ `dpkg --print-architecture` == "*arm*" ]]; then
+    PACKAGES=(
+        # gcc  # compile python c-source
+        # build-essential  # crypt
+        libatlas3-base  # numpy piwheels
+        libgfortran5  # numpy piwheels
+        # libssl-dev  # crypt
+        # libffi-dev  # crypt
+        # python3-dev  # crypt
+    )
+else
+    PACKAGES=(
+    )
+fi
 
 # Required debian packages for building dependencies
 PACKAGES_DEV=(
@@ -24,5 +34,6 @@ apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/src/app/build/
 
 # Update pip to latest
-pip3 install --upgrade --no-cache-dir pip
-pip3 install --upgrade --no-cache-dir poetry
+pip3 install --upgrade --no-cache-dir \
+    pip \
+    poetry
