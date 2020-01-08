@@ -9,6 +9,8 @@ if [[ `dpkg --print-architecture` == "armhf" ]]; then
     PACKAGES=(
         libatlas3-base  # numpy piwheels
         libgfortran5  # numpy piwheels
+        libxslt1.1  # lxml piwheels
+        libicu63  # lxml piwheels
     )
 else
     PACKAGES=(
