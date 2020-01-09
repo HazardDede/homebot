@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "homebot"
-version = "0.1.0"
+version = "0.1.1"
 description = "The smart bot to the rescue to automate tedious tasks around your home"
 authors = ["Dennis Muth <d.muth@gmx.net>"]
 license = "MIT"

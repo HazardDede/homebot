@@ -134,3 +134,6 @@ dmypy.json
 
 # Mac Stuff
 .DS_Store
+
+# qemu binary
+qemu-arm-static
