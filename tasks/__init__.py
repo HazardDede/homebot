@@ -1,10 +1,29 @@
+import glob
 import os
 
+import MarkdownPP
+from argresolver.utils import modified_environ
 from invoke import task
 
 
+ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
+CONFIGS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../configs'))
 SOURCE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../homebot'))
 TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests'))
+
+
+@task
+def docs(ctx):
+    """Pre-processes the docs (*.mdpp)."""
+    def _process(file_path):
+        modules = MarkdownPP.modules.keys()
+        with open(file_path, 'r') as mdpp:
+            # Output file takes filename from input file but has .md extension
+            with open(os.path.splitext(file_path)[0] + '.md', 'w') as md:
+                MarkdownPP.MarkdownPP(input=mdpp, output=md, modules=modules)
+
+    for file_path in glob.iglob(os.path.join(ROOT_PATH, '**/*.mdpp'), recursive=True):
+        _process(file_path)
 
 
 @task
@@ -34,7 +53,6 @@ def mypy(ctx):
 @task(flake8, pylint, mypy)
 def lint(ctx):
     """Run all linters against codebase."""
-    pass
 
 
 @task
@@ -64,7 +82,25 @@ def doctest(ctx):
     )
 
 
-@task(pytest)
+@task
+def test_configs(ctx):
+    """Tests the configs using the homebot validator."""
+    from homebot.__main__ import Runner
+    context = {
+        'HASS_TOKEN': 'hass_token',
+        'HASS_URI': 'http://i-do-not-exist:8123',
+        'SLACK_TOKEN': 'slack_token',
+    }
+    with modified_environ(**context):
+        for file_path in glob.iglob(os.path.join(CONFIGS_PATH, '**/run.py'), recursive=True):
+            Runner.validate(file_path)
+
+
+@task(pytest, test_configs)
 def test(ctx):
     """Runs all tests against codebase."""
-    pass
+
+
+@task(lint, test, docs)
+def commit(ctx):
+    """Runs the linter, test suite and creates the docs."""

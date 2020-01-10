@@ -30,7 +30,58 @@ You need to setup a bot account in slack (documentation will follow).
 
 Create a python file (I will call it `run.py`) and paste the following content into it:
 
-!INCLUDECODE "configs/simple/run.py" (python)
+```python
+from homebot import (
+    AssetManager,
+    Flow,
+    Orchestrator,
+    actions,
+    formatter as fmt,
+    listener,
+    processors
+)
+
+assets = AssetManager()
+
+# Secrets
+SLACK_TOKEN = assets.secret('slack_token')
+
+slack_action = actions.slack.SendMessage(token=SLACK_TOKEN)
+help_processor = processors.Help()
+
+listener = listener.slack.DirectMention(token=SLACK_TOKEN)
+flows = [
+    Flow(
+        processor=processors.Error(),
+        formatters=[fmt.StringFormat(
+            "Processing of `{ctx.incoming}` failed: `{payload.error_message}`\n"
+            "```{payload.trace}```"
+        )],
+        actions=[slack_action]
+    ),
+    Flow(
+        processor=processors.UnknownCommand(),
+        formatters=[fmt.StringFormat(
+            f"Command is invalid: `{{payload.command}}`. Try `{help_processor.command}`."
+        )],
+        actions=[slack_action]
+    ),
+    Flow(
+        processor=processors.Version(),
+        formatters=[
+            fmt.StringFormat("Homebot version `{payload}` is up and running...")
+        ],
+        actions=[slack_action]
+    ),
+    Flow(
+        processor=help_processor,
+        formatters=[fmt.help.TextTable(), fmt.slack.Codify()],
+        actions=[slack_action]
+    )
+]
+orchestra = Orchestrator(listener, flows)
+
+```
 
 This setups a bot that is able to handle errors (`processors.Error`), unknown commands from the user (`processors.UnknownCommand()`),
 provide a help / usage message to slack channel (`processors.Help`) and can show the current version (`processors.Version`).

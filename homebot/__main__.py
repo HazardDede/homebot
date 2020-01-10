@@ -11,6 +11,7 @@ import fire  # type: ignore
 
 from homebot.assets import AssetManager
 from homebot.orchestra import Orchestrator
+from homebot.utils import LogMixin
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -21,7 +22,7 @@ def _assert_config_file(config: str) -> None:
         raise FileNotFoundError(f"Configuration '{str(config)}' does not exist.")
 
 
-class Runner:
+class Runner(LogMixin):
     """Homebot app."""
 
     @staticmethod
@@ -61,8 +62,8 @@ class Runner:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(orchestra.run())
 
-    @staticmethod
-    def validate(config: str) -> None:
+    @classmethod
+    def validate(cls, config: str) -> None:
         """
         Validates the specified configuration.
         If the config is valid the validation will be quiet; if the config is broken it
@@ -72,6 +73,7 @@ class Runner:
             config (str): The config to validate.
         """
         _assert_config_file(config)
+        cls.logger.info("Validating: %s", config)  # pylint: disable=no-member
         # First try to compile...
         py_compile.compile(config)
         # ... then dummy load it
