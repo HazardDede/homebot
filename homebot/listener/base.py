@@ -9,6 +9,10 @@ from homebot.utils import AutoStrMixin, LogMixin
 from homebot.validator import TypeGuardMeta
 
 
+class ListenerError(Exception):
+    """Is raised when the listener fails for some reason."""
+
+
 class Listener(AutoStrMixin, LogMixin, metaclass=TypeGuardMeta):
     """Base class for listeners. Defines the interface to respect."""
 

@@ -12,12 +12,11 @@ assets = AssetManager()
 
 # Secrets
 SLACK_TOKEN = assets.secret('slack_token')
-SLACK_BOT_ID = assets.secret('slack_bot_id')
 
 slack_action = actions.slack.SendMessage(token=SLACK_TOKEN)
 help_processor = processors.Help()
 
-listener = listener.slack.DirectMention(token=SLACK_TOKEN, bot_id=SLACK_BOT_ID)
+listener = listener.slack.DirectMention(token=SLACK_TOKEN)
 flows = [
     Flow(
         processor=processors.Error(),
