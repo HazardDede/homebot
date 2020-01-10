@@ -137,3 +137,6 @@ dmypy.json
 
 # qemu binary
 qemu-arm-static
+
+# Sandbox stuff
+sandbox.py
