@@ -1,8 +1,8 @@
 # homebot
 
 [![Python](https://img.shields.io/badge/Python-3.7-green.svg)](https://www.python.org/)
-[![Build Status](https://travis-ci.org/HazardDede/homebot.svg?branch=master)](https://travis-ci.org/HazardDede/pnp)
-[![Coverage Status](https://coveralls.io/repos/github/HazardDede/homebot/badge.svg?branch=master)](https://coveralls.io/github/HazardDede/pnp?branch=master)
+[![Build Status](https://travis-ci.org/HazardDede/homebot.svg?branch=master)](https://travis-ci.org/HazardDede/homebot)
+[![Coverage Status](https://coveralls.io/repos/github/HazardDede/homebot/badge.svg?branch=master)](https://coveralls.io/github/HazardDede/homebot?branch=master)
 [![Docker Hub](https://img.shields.io/badge/docker-hub-green.svg)](https://hub.docker.com/r/hazard/homebot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
