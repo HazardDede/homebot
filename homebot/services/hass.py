@@ -1,7 +1,6 @@
 """Home assistant related services."""
-
+import fnmatch
 import json
-import re
 from typing import Any, Optional, Dict, Iterable
 
 import attr
@@ -118,7 +117,12 @@ class HassApi:
     async def states(self, domain: Optional[str] = None, entity_pattern: Optional[str] = None) -> Iterable[HassEntity]:
         """Calls the endpoint /api/states to retrieve the current state of each entity."""
         def _entity_filter(entity: HassEntity) -> bool:
-            return bool(regex.match(entity.entity_name)) or bool(regex.match(entity.friendly_name or ""))
+            if not entity_pattern:
+                return True
+            return (
+                fnmatch.fnmatch(entity.entity_name, entity_pattern)
+                or fnmatch.fnmatch(entity.friendly_name or '', entity_pattern)
+            )
 
         entities = HassEntity.from_response(await self.call(endpoint='states'))
 
@@ -126,7 +130,6 @@ class HassApi:
             entities = [item for item in entities if item.domain.lower() == domain.lower()]
 
         if entity_pattern:
-            regex = re.compile(entity_pattern, flags=re.IGNORECASE)
             entities = [item for item in entities if _entity_filter(item)]
 
         return entities

@@ -96,7 +96,7 @@ async def test_states():
             HassEntity(domain='light', entity_name='light_dummy', friendly_name='Light', device_class=None, state='off', unit_of_measurement=''),
         ]
 
-        res = await dut.states(entity_pattern='.*light.*')
+        res = await dut.states(entity_pattern='*light*')
         assert res == [
             HassEntity(domain='light', entity_name='light_dummy', friendly_name='Light', device_class=None, state='off', unit_of_measurement=''),
         ]

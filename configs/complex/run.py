@@ -18,7 +18,8 @@ HASS_TOKEN = assets.secret('hass_token')
 
 # Template path
 TPL_LEGO_PRICING = assets.template_path('tpl_lego_pricing.json')
-TPL_HASS_STATE = assets.template_path('tpl_hass_state_change.mako')
+TPL_HASS_ENTITY_STATES = assets.template_path('tpl_hass_entity_states.mako')
+TPL_HASS_STATE_CHANGE = assets.template_path('tpl_hass_state_change.mako')
 TPL_TRAFFIC_TRAIN = assets.template_path('tpl_traffic_train.mako')
 
 slack_action = actions.slack.SendMessage(token=SLACK_TOKEN)
@@ -68,7 +69,15 @@ flows = [
             base_url=HASS_URI,
             token=HASS_TOKEN
         ),
-        formatters=[fmt.slack.Template.from_file(TPL_HASS_STATE)],
+        formatters=[fmt.slack.Template.from_file(TPL_HASS_STATE_CHANGE)],
+        actions=[slack_action]
+    ),
+    Flow(
+        processor=processors.hass.Entities(
+            base_url=HASS_URI,
+            token=HASS_TOKEN
+        ),
+        formatters=[fmt.slack.Template.from_file(TPL_HASS_ENTITY_STATES)],
         actions=[slack_action]
     )
 ]
