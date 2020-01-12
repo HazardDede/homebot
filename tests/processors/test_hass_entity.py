@@ -79,4 +79,4 @@ async def test_help(dut):
 
 def test_import():
     import homebot.processors as proc
-    assert proc.hass.OnOffSwitch is not None
+    assert proc.hass.Entities is not None

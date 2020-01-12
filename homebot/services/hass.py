@@ -6,6 +6,7 @@ from typing import Any, Optional, Dict, Iterable
 import attr
 from typeguard import typechecked
 
+from homebot.services.base import LocationService, Location, LocationResolutionError
 from homebot.validator import attrs_assert_type
 
 
@@ -144,3 +145,28 @@ class HassApi:
         res = await self.call(endpoint, method=HassApi.METHOD_POST, data=data)
 
         return HassStateChange.from_api_response(res)
+
+
+class PersonTracker(LocationService):
+    """Home assistant location service that uses person entities to determine if a person is home or not."""
+    def __init__(self, api: HassApi):
+        self.api = api
+
+    @typechecked
+    async def is_home(self, name: str) -> bool:
+        resp = list(await self.api.states(domain='person', entity_pattern=name.lower()))
+        if not resp:  # No result
+            raise LocationResolutionError(f"Failed to find the person 'person.{name} in home assistant.'")
+        if len(resp) > 1:  # Multiple results -> weird
+            self.logger.warning("Multiple entities for person.%s. Ignoring additional entities after the "
+                                "first one", name)
+        person_state = resp[0]
+
+        return str(person_state.state).lower() == 'home'
+
+    @typechecked
+    async def is_away(self, name: str) -> bool:
+        return not await self.is_home(name)
+
+    async def location(self, name: str) -> Location:
+        raise NotImplementedError()
